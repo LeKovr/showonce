@@ -29,23 +29,19 @@ function pageLoaded() {
 
 function showItem(item) {
   const { elements } = document.querySelector('form#metaform')
-  console.dir(elements);
-for (const [ key, value ] of Object.entries(item) ) {
-  const field = elements.namedItem(key)
-  var val = value;
-  if (key=='status') val=mkStatus(value)
-  else if (key=='created' || key=='modified') val=mkStamp(value);
-  field && (field.value = val)
-}  
-var dropZone = document.getElementById('meta');
-dropZone.style.display = 'initial';
-
-// show button
-if (item.status == 1) {
-  var div = document.getElementById('data_request');
-  div.style.display = 'initial';
-
-}
+  for (const [ key, value ] of Object.entries(item) ) {
+    const field = elements.namedItem(key)
+    var val = value;
+    if (key=='status') val=mkStatus(value)
+    else if (key=='created' || key=='modified') val=mkStamp(value);
+    field && (field.value = val)
+  }
+  document.getElementById('meta').style.display = 'initial';
+  // show button
+  if (item.status == 1) {
+    var div = document.getElementById('data_request');
+    div.style.display = 'initial';
+  }
 }
 
 function showItemData() {
@@ -80,27 +76,27 @@ function sendForm(form, path) {
   console.dir(formData);
 
   var data= JSON.stringify(Object.fromEntries(formData));
-data.exp=Number(data.exp);
-xhr.open('POST', path);
-xhr.setRequestHeader('Accept', 'application/json'); // TODO: Accept?
-xhr.onreadystatechange = function() {
-  if (xhr.readyState != 4) return;
-  if (xhr.status != 200) {
-    console.log(xhr.status + ': ' + xhr.statusText);
-  } else {
-    var resp = JSON.parse(xhr.responseText);
-    if (resp == undefined) return;
+  data.exp=Number(data.exp);
+  xhr.open('POST', path);
+  xhr.setRequestHeader('Accept', 'application/json'); // TODO: Accept?
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState != 4) return;
+    if (xhr.status != 200) {
+      console.log(xhr.status + ': ' + xhr.statusText);
+    } else {
+      var resp = JSON.parse(xhr.responseText);
+      if (resp == undefined) return;
 
-    var a = document.createElement('a');
-    //a.target = '_blank';
-    a.href = '/?id='+resp;
-    a.innerText = resp;
-    div.innerText='Saved. ID: ';
-    div.appendChild(a);
+      var a = document.createElement('a');
+      //a.target = '_blank';
+      a.href = '/?id='+resp;
+      a.innerText = resp;
+      div.innerText='Saved. ID: ';
+      div.appendChild(a);
+    }
   }
-}
-xhr.send(data);
-return false;
+  xhr.send(data);
+  return false;
 }
 
 function pageMyLoaded() {
@@ -150,6 +146,7 @@ function pageListLoaded() {
   }
   xhr.send();
 }
+
 function showItems(item) {
   var tbodyRef = document.getElementById('items').getElementsByTagName('tbody')[0];
   for (const [ key, value ] of Object.entries(item) ) {
@@ -194,7 +191,6 @@ function clearForm(form) {
   document.getElementById('list').innerHTML = '';
   document.querySelector('form').reset(); // clear file input
   document.getElementById("log").innerHTML='';
-
   return true;
 }
 
@@ -212,11 +208,11 @@ function disable_elements(elements, state) {
   var length = elements.length;
   while(length--) {
     var e = elements[length];
-   if (e.classList.contains('reversed')) {
-    e.disabled = !state;
-   } else {
-    e.disabled = state;
-   }
+    if (e.classList.contains('reversed')) {
+      e.disabled = !state;
+    } else {
+      e.disabled = state;
+    }
   }
 }
 
