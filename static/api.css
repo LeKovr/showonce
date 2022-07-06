@@ -38,9 +38,17 @@ th, td {
 }
 
 .right label {
-   vertical-align: top;
+  vertical-align: top;
 }
 
+.wide {
+  width:70%;
+}
+
+select {
+  padding: 0.1em;
+  margin-top: 0.1px;
+}
 .content table {
  margin-left: auto;
   margin-right: auto;
@@ -54,6 +62,10 @@ textarea {
 .stat td {
   width: 50px;
   text-align: right;
+}
+
+input[type="number"] {
+  width: 50px;
 }
 
 .hide {

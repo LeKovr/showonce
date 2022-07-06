@@ -4,6 +4,7 @@ import (
 	crand "crypto/rand"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/oklog/ulid/v2"
@@ -42,16 +43,18 @@ func (store Storage) SetMeta(owner string, req NewItemRequest) (*ulid.ULID, erro
 	// Validate expiration
 	var expire time.Duration
 	if req.ExpireValue != "" {
-		format := "%s"
-		if req.ExpireInHours {
-			format += "h"
+		if req.ExpireUnit == "d" {
+			days, err := strconv.Atoi(req.ExpireValue)
+			if err != nil {
+				return nil, fmt.Errorf("Expire days parse error: %w", err)
+			}
+			expire = time.Duration(days) * time.Hour * 24
 		} else {
-			format += "s"
-		}
-		var err error
-		expire, err = time.ParseDuration(fmt.Sprintf(format, req.ExpireValue))
-		if err != nil {
-			return nil, fmt.Errorf("Expire parse error: %w", err)
+			var err error
+			expire, err = time.ParseDuration(fmt.Sprintf("%s%s", req.ExpireValue, req.ExpireUnit))
+			if err != nil {
+				return nil, fmt.Errorf("Expire parse error: %w", err)
+			}
 		}
 	}
 	meta := ItemMeta{

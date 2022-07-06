@@ -20,9 +20,9 @@ type Item struct {
 
 type NewItemRequest struct {
 	Item
-	ExpireValue   string `json:"exp"`
-	ExpireInHours bool   `json:"exp_hours"`
-	Data          string `json:"data"`
+	ExpireValue string `json:"exp"`
+	ExpireUnit  string `json:"exp_unit"`
+	Data        string `json:"data"`
 }
 
 type ItemMeta struct {

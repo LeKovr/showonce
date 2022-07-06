@@ -74,8 +74,12 @@ function sendForm(form, path) {
       formData = new FormData(form);
   div.innerHTML = '';
   console.dir(formData);
-
-  var data= JSON.stringify(Object.fromEntries(formData));
+  var fields = Object.fromEntries(formData);
+  if (fields.title==''||fields.data=='') {
+    div.innerHTML = 'Title and data must be set';
+    return false;
+  }
+  var data= JSON.stringify(fields);
   data.exp=Number(data.exp);
   xhr.open('POST', path);
   xhr.setRequestHeader('Accept', 'application/json'); // TODO: Accept?
