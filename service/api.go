@@ -5,7 +5,6 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -32,14 +31,8 @@ func (srv APIService) SetupRoutes(mux *http.ServeMux) {
 }
 
 /*
-func (srv APIService) Middleware(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("middleware", r.URL)
-		h.ServeHTTP(w, r)
-	})
-}
-*/
-/*
+Вариант сбора статистики в реальном времени
+
 получаем события
 new - пристегнуть к автору, обновить стату
 show - удалить у автора, сохранить время показа, обновить стату
@@ -86,7 +79,6 @@ func (srv APIService) Item(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method == "POST" {
 		resp, err := srv.store.GetData(id)
-		fmt.Printf(">>>GOT ID (%s)\n", id)
 		response(w, log, resp, err)
 	} else {
 		resp, err := srv.store.GetMeta(id)

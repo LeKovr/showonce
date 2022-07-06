@@ -92,9 +92,9 @@ func (store Storage) GetMeta(id string) (*ItemMeta, error) {
 	}
 	rv, ok := meta.(*ItemMeta)
 	if !ok {
-		fmt.Printf(">>>> %v (%#v)\n", meta, meta)
 		return nil, ErrDataCorrupted
 	}
+	checkExpire(rv)
 	return rv, nil
 }
 
@@ -126,6 +126,7 @@ func (store Storage) Items(owner string) (items []ItemInfo, err error) {
 		if meta.Owner != owner {
 			continue
 		}
+		checkExpire(meta)
 		items = append(items, ItemInfo{Id: k, Meta: meta})
 	}
 	return
@@ -135,6 +136,7 @@ func (store Storage) Stats(owner string) (stat StatResponse, err error) {
 	cacheItems := store.Meta.Items()
 	for _, v := range cacheItems {
 		meta := v.Object.(*ItemMeta)
+		checkExpire(meta)
 		var curr *Stat
 		if meta.Owner == owner {
 			curr = &stat.My
@@ -152,4 +154,12 @@ func (store Storage) Stats(owner string) (stat StatResponse, err error) {
 		}
 	}
 	return
+}
+
+// TODO: replace with OnEvicted
+func checkExpire(meta *ItemMeta) {
+	if meta.Status == StatusWait && time.Now().After(meta.Modified) {
+		// Data expired already
+		meta.Status = StatusExpired
+	}
 }
