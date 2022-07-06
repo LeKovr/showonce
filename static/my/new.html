@@ -1,31 +1,48 @@
+<!DOCTYPE html>
 <html>
-<head>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+  <head>
+  <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel='shortcut icon' type='image/x-icon' href='/favicon.ico' />
     <script src="/js/api.js"></script>
-  
-</head>
-
+    <link rel="stylesheet" type="text/css" href="/api.css">
+    <title>Show me once - New secret</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+  </head>
+<html>
 <body>
-<h1>create new item</h1>
-<a href="/my">Admin home</a>
-
-<div id="meta" >
-    <form id="metaform">
-        Title: <input type="text" name="title"  /><br>
-        Group: <input type="text" name="group" value="default" /><br>
-        Expire: <input type="text" name="exp" value="300" /> <input type="checkbox" name="exp_hours" /> Hours<br>
-        <textarea id="item_data" name="data"></textarea>
-        <input type="button" value="Отправить" onclick="return sendForm(this.form, '/my/api/new');">
-    </form>
-    
+<div class="top">
+  <div class="right">
+    <a href="/">Home</a>
+    | <a href="/my">Admin home</a>
+    | <a href="/logout">Logout</a>
+  </div>
 </div>
-<div id="log"></div>
-
-<font color="green">This is an another private page.</font> Go
-<a href="/">Home</a><br>
-<a href="logout">logout</a>.
-
+<div class="bottom">
+  <div class="right">
+    Powered by showonce
+  </div>
+</div>
+<div class="content">
+  <div id="meta">
+    <h1>Create new secret</h1>
+    <form id="metaform">
+    <table>
+      <tr><td>Title</td><td><input type="text" name="title" size="40"  /></td></tr>
+      <tr><td>Group</td><td><input type="text" name="group" size="10" value="default"  /></td></tr>
+      <tr><td>Expire</td><td><input type="text" name="exp" size="5" value="300" />
+        <input type="checkbox" name="exp_hours" /> Hours (else - secs)
+      </td></tr>
+      <tr><td colspan="2" align="center">
+        <textarea id="item_data" name="data" rows=10></textarea>
+        <input type="button" value="Отправить" onclick="return sendForm(this.form, '/my/api/new');">
+        <div id="log"></div>
+      </td></tr>
+    </table>
+    </form>
+  </div>
+</div>
 </body>
 </html>

@@ -1,37 +1,51 @@
+<!DOCTYPE html>
 <html>
-<head>
-  <script src="js/api.js"></script>
-
-</head>
+  <head>
+  <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+    <script src="js/api.js"></script>
+    <link rel="stylesheet" type="text/css" href="/api.css">
+    <title>Show me once</title>
+  </head>
+<html>
 <body onload = pageLoaded();>
-
-<form>
-ID:
-<input type="text" id="id_input" name="id" />
-<input type="submit"><br>
-</form>
-
-<div id="meta" style="display:none">
-<h1>Show item</h1>
-<form id="metaform">
-
-  Title: <input type="text" name="title"  disabled /><br>
-  Group: <input type="text" name="group"  disabled /><br>
-Owner: <input type="text" name="owner"  disabled /><br>
-Status: <input type="text" name="status" disabled /><br>
-Created: <input type="text" name="created" disabled /><br>
-Modified: <input type="text" name="modified" disabled /><br>
-
-<div id="data_request" style="display:none">
-  <input type="button" value="Show" onclick="return showItemData();">
+<div class="top">
+  <div class="right">
+    <a href="/my">Admin area</a>
+  </div>
 </div>
-<div id="data_response" style="display:none">
-  <textarea id="item_data" name="data" disabled></textarea>
+<div class="bottom">
+  <div class="right">
+    Powered by showonce
+  </div>
 </div>
-</form>
-
+<div class="content">
+  <form>
+    ID: <input type="text" id="id_input" name="id" size="40" /><input type="submit" /><br>
+  </form>
+  <div id="meta" style="display:none">
+    <h1>Secret</h1>
+    <form id="metaform">
+    <table>
+      <tr><td>Title</td><td><input type="text" name="title" size="40" disabled /></td></tr>
+      <tr><td>Group</td><td><input type="text" name="group" size="10" disabled /></td></tr>
+      <tr><td>Owner</td><td><input type="text" name="owner" size="10" disabled /></td></tr>
+      <tr><td>Status</td><td><input type="text" name="status" size="10" disabled /></td></tr>
+      <tr><td>Created</td><td> <input type="text" name="created" size="40" disabled /></td></tr>
+      <tr><td>Modified</td><td><input type="text" name="modified"size="40" disabled /></td></tr>
+      <tr><td colspan="2" align="center">
+        <div id="data_request" style="display:none">
+          <input type="button" value="Show" onclick="return showItemData();">
+        </div>
+        <div id="data_response" style="display:none">
+          <textarea id="item_data" name="data" rows=10 disabled></textarea>
+        </div>
+        <div id="log"></div>
+      </td></tr>
+    </table>
+    </form>
+  </div>
 </div>
-<div id="log"></div>
-<a href="/my">Admin area</a>
 </body>
 </html>

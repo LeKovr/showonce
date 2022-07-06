@@ -32,7 +32,10 @@ function showItem(item) {
   console.dir(elements);
 for (const [ key, value ] of Object.entries(item) ) {
   const field = elements.namedItem(key)
-  field && (field.value = value)
+  var val = value;
+  if (key=='status') val=mkStatus(value)
+  else if (key=='created' || key=='modified') val=mkStamp(value);
+  field && (field.value = val)
 }  
 var dropZone = document.getElementById('meta');
 dropZone.style.display = 'initial';
@@ -43,7 +46,6 @@ if (item.status == 1) {
   div.style.display = 'initial';
 
 }
-console.log(">>>>",item.status)
 }
 
 function showItemData() {
@@ -54,6 +56,10 @@ function showItemData() {
     if (xhr.readyState != 4) return;
     if (xhr.status != 200) {
       console.log(xhr.status + ': ' + xhr.statusText);
+      if (xhr.status == 404) {
+        document.getElementById('data_request').style.display = 'none';
+        document.getElementById("log").innerText='Данные больше не доступны'
+      }
     } else {
       var resp = JSON.parse(xhr.responseText);
       if (resp == undefined) return;
@@ -89,6 +95,7 @@ xhr.onreadystatechange = function() {
     //a.target = '_blank';
     a.href = '/?id='+resp;
     a.innerText = resp;
+    div.innerText='Saved. ID: ';
     div.appendChild(a);
   }
 }
@@ -96,6 +103,90 @@ xhr.send(data);
 return false;
 }
 
+function pageMyLoaded() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/my/api/stat');
+  xhr.setRequestHeader('Accept', 'application/json');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState != 4) return;
+    if (xhr.status != 200) {
+      console.log(xhr.status + ': ' + xhr.statusText);
+    } else {
+      var resp = JSON.parse(xhr.responseText);
+      if (resp == undefined) return;
+      console.dir(resp);
+      showStatItems(resp);
+    }
+  }
+  xhr.send();
+}
+
+function showStatItems(item) {
+  var tbodyRef = document.getElementById('stat').getElementsByTagName('tbody')[0];
+  for (const [ key, value ] of Object.entries(item) ) {
+    var newRow = tbodyRef.insertRow();
+    addCell(newRow,key);
+    const array = ["wait", "read", "expired","total"];
+    array.forEach(function (item, index) {
+      addCell(newRow,value[item]);
+    });
+  }  
+}
+
+function pageListLoaded() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/my/api/items');
+  xhr.setRequestHeader('Accept', 'application/json');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState != 4) return;
+    if (xhr.status != 200) {
+      console.log(xhr.status + ': ' + xhr.statusText);
+    } else {
+      var resp = JSON.parse(xhr.responseText);
+      if (resp == undefined) return;
+      console.dir(resp);
+      showItems(resp);
+    }
+  }
+  xhr.send();
+}
+function showItems(item) {
+  var tbodyRef = document.getElementById('items').getElementsByTagName('tbody')[0];
+  for (const [ key, value ] of Object.entries(item) ) {
+    var newRow = tbodyRef.insertRow();
+    var meta = value.meta;
+    addCellHref(newRow,'/?id='+value.id,meta.title);
+    addCell(newRow,meta.group);
+    addCell(newRow,mkStatus(meta.status));
+    addCell(newRow,mkStamp(meta.created));
+    addCell(newRow,mkStamp(meta.modified));
+  }  
+}
+
+function mkStatus(v){
+  let map = new Map([ [ 1, 'Wait' ], [ 2, 'Read' ], [3, 'Expired' ], [ 4, 'Cleared' ] ]);
+  return map.get(v);
+}
+
+function mkStamp(v){
+  var json = '"'+v+'"';
+  var dateStr = JSON.parse(json);  
+  var date = new Date(dateStr);
+  return dateFormatted(date)
+}
+
+function addCell(row,text) {
+  var newCell = row.insertCell();
+  var newText = document.createTextNode(text);
+  newCell.appendChild(newText);
+}
+function addCellHref(row,href,text) {
+  var newCell = row.insertCell();
+  var a = document.createElement('a');
+  a.href = href;
+  a.innerText = text;
+  newCell.appendChild(a);
+}
 
 function clearForm(form) {
   console.log('reset');
@@ -127,4 +218,24 @@ function disable_elements(elements, state) {
     e.disabled = state;
    }
   }
+}
+
+// Format datetime
+// code from http://stackoverflow.com/a/32062237
+// with changed result formatting
+function dateFormatted(date) {
+  var month = date.getMonth() + 1;
+  var day = date.getDate();
+  var hour = date.getHours();
+  var min = date.getMinutes();
+  var sec = date.getSeconds();
+
+  month = (month < 10 ? "0" : "") + month;
+  day = (day < 10 ? "0" : "") + day;
+  hour = (hour < 10 ? "0" : "") + hour;
+  min = (min < 10 ? "0" : "") + min;
+  sec = (sec < 10 ? "0" : "") + sec;
+
+  var str = day + "." + month + "." + date.getFullYear() + " " + hour + ":" + min + ":" + sec;
+  return str;
 }
