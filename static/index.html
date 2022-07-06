@@ -1,0 +1,37 @@
+<html>
+<head>
+  <script src="js/api.js"></script>
+
+</head>
+<body onload = pageLoaded();>
+
+<form>
+ID:
+<input type="text" id="id_input" name="id" />
+<input type="submit"><br>
+</form>
+
+<div id="meta" style="display:none">
+<h1>Show item</h1>
+<form id="metaform">
+
+  Title: <input type="text" name="title"  disabled /><br>
+  Group: <input type="text" name="group"  disabled /><br>
+Owner: <input type="text" name="owner"  disabled /><br>
+Status: <input type="text" name="status" disabled /><br>
+Created: <input type="text" name="created" disabled /><br>
+Modified: <input type="text" name="modified" disabled /><br>
+
+<div id="data_request" style="display:none">
+  <input type="button" value="Show" onclick="return showItemData();">
+</div>
+<div id="data_response" style="display:none">
+  <textarea id="item_data" name="data" disabled></textarea>
+</div>
+</form>
+
+</div>
+<div id="log"></div>
+<a href="/my">Admin area</a>
+</body>
+</html>

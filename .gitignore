@@ -1,0 +1,4 @@
+.env*
+showonce
+!cmd/showonce
+coverage.out

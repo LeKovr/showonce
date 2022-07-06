@@ -1,0 +1,31 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+    <script src="/js/api.js"></script>
+  
+</head>
+
+<body>
+<h1>create new item</h1>
+<a href="/my">Admin home</a>
+
+<div id="meta" >
+    <form id="metaform">
+        Title: <input type="text" name="title"  /><br>
+        Group: <input type="text" name="group" value="default" /><br>
+        Expire: <input type="text" name="exp" value="300" /> <input type="checkbox" name="exp_hours" /> Hours<br>
+        <textarea id="item_data" name="data"></textarea>
+        <input type="button" value="Отправить" onclick="return sendForm(this.form, '/my/api/new');">
+    </form>
+    
+</div>
+<div id="log"></div>
+
+<font color="green">This is an another private page.</font> Go
+<a href="/">Home</a><br>
+<a href="logout">logout</a>.
+
+</body>
+</html>
