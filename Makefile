@@ -12,6 +12,8 @@ PRG           ?= $(shell basename $$PWD)
 
 SOURCES        = ./service/model.go ./service/storage.go ./service/api.go ./cmd/showonce/main.go ./app/auth.go ./app/app.go ./static/static.go
 
+DCAPE_DC_USED     = false
+
 VERSION       ?= $(shell git describe --tags --always)
 
 APP_ROOT      ?= .
