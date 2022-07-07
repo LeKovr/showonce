@@ -6,7 +6,7 @@ GO            ?= go
 CFG           ?= .env
 PRG           ?= $(shell basename $$PWD)
 
-SOURCES        = $(shell find .  -maxdepth 3 -mindepth 1 -path ./var -prune -false -o -name '*.go')
+SOURCES        = $(shell find .  -maxdepth 3 -mindepth 1 -path ./var -prune -o -name '*.go' -printf '%p\n')
 VERSION       ?= $(shell git describe --tags --always)
 
 APP_ROOT      ?= .

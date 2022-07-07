@@ -33,7 +33,7 @@ steps:
   pull: never
   image: ${DCAPE_COMPOSE}
   commands:
-  - make config
+  - . setup config
   - make up
   volumes:
   - name: dockersock
