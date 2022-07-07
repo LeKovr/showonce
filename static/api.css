@@ -17,6 +17,19 @@ th, td {
   right:0;
 }
 
+.project {
+  padding-top:3px;
+  overflow: hidden;
+  position:fixed;
+  vertical-align: center;
+  font-weight: bold;
+  color: green;
+}
+
+.priv {
+  color: darkred;
+}
+
 .top {
   overflow: hidden;
   position:fixed;
