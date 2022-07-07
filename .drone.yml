@@ -10,8 +10,6 @@ steps:
   image: ${DCAPE_COMPOSE}
   commands:
   - . setup config
-  - pwd
-  - ls -l
   - make .drone-default
   volumes:
   - name: dockersock
