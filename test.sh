@@ -1,3 +1,11 @@
+#!/bin/bash
+
+# Test API methods
+#   Usage:
+#     bash test.sh XXXXXXX
+#
+#   Where XXXXXXX - your gitea app token (see /user/settings/applications)
+
 
 ACCEPT="Accept: application/json"
 CT=""
@@ -14,7 +22,7 @@ do_create() {
     "title":"Message title",
     "group":"default",
     "exp":"90",
-    "exp_hours": false,
+    "exp_unit": "s",
     "data":"secret"
 }
 EOF
@@ -52,8 +60,11 @@ do_stat() {
   echo $rv
 }
 
+do_stat
+
 id=$(do_create | jq -r .)
 echo ">>ID: $id"
+[[ "$id" ]] || exit
 
 do_item $id | jq -r .
 do_data $id | jq -r .
