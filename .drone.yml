@@ -1,40 +1,16 @@
+---
 kind: pipeline
-name: ci
+type: docker
+name: app
 
 steps:
-
-- name: fetch tags
-  image: alpine/git
-  commands:
-  - git fetch --tags
-  - git describe --tags --always > .version
-
-- name: test app
-  image: golang:1.18.3
-  commands:
-  - go test -tags test -covermode=atomic -coverprofile=coverage.out ./...
-  - go vet ./...
-  environment:
-    CGO_ENABLED: 0
-
-- name: test docker build
-  image: plugins/docker
-  settings:
-    repo: testbuild
-    dry_run: true
-    build_args:
-      - GOLANG_VERSION=1.16.10-alpine3.14
-  when:
-    event:
-      exclude:
-      - tag
 
 - name: deploy_local
   pull: never
   image: ${DCAPE_COMPOSE}
   commands:
   - . setup config
-  - make up
+  - make .drone-default
   volumes:
   - name: dockersock
     path: /var/run/docker.sock
