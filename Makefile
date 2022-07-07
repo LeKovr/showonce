@@ -6,7 +6,12 @@ GO            ?= go
 CFG           ?= .env
 PRG           ?= $(shell basename $$PWD)
 
-SOURCES        = $(shell find .  -maxdepth 3 -mindepth 1 -path ./var -prune -o -name '*.go' -printf '%p\n')
+# TODO: find: unrecognized: -printf
+# BusyBox v1.33.1 () multi-call binary.
+#SOURCES        = $(shell find .  -maxdepth 3 -mindepth 1 -path ./var -prune -o -name '*.go' -printf '%p\n')
+
+SOURCES        = ./service/model.go ./service/storage.go ./service/api.go ./cmd/showonce/main.go ./app/auth.go ./app/app.go ./static/static.go
+
 VERSION       ?= $(shell git describe --tags --always)
 
 APP_ROOT      ?= .
