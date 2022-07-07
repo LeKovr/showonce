@@ -6,9 +6,10 @@ import (
 	"os"
 	"time"
 
-	"KIT/config"
-	"KIT/logger"
-	"KIT/oauth2"
+	"github.com/LeKovr/go-kit/config"
+	"github.com/LeKovr/go-kit/logger"
+	"github.com/LeKovr/go-kit/oauth2"
+
 	"SELF/service"
 	"SELF/static"
 )

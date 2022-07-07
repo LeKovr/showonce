@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"KIT/oauth2"
+	"github.com/LeKovr/go-kit/oauth2"
 
 	"github.com/go-logr/logr"
 )

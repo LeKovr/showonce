@@ -4,11 +4,11 @@ go 1.18
 
 replace SELF => ./
 
-replace KIT => ./../go-kit
-
 require (
-	KIT v0.0.0-00010101000000-000000000000
 	SELF v0.0.0-00010101000000-000000000000
+	github.com/LeKovr/go-kit/config v0.0.0-20220707002423-5f331e3aaae2
+	github.com/LeKovr/go-kit/logger v0.0.0-20220707002423-5f331e3aaae2
+	github.com/LeKovr/go-kit/oauth2 v0.0.0-20220707002423-5f331e3aaae2
 	github.com/go-logr/logr v1.2.3
 	github.com/oklog/ulid/v2 v2.0.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible
