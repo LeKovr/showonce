@@ -5,15 +5,11 @@
 
 package main
 
-import (
-	"os"
-
-	"SELF/app"
-)
+import "os"
 
 // Actual main.version value will be set at build time
 var version = "0.0-dev"
 
 func main() {
-	app.Run(version, os.Exit)
+	Run(version, os.Exit)
 }
