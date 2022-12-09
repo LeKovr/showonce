@@ -1,12 +1,15 @@
 
-FROM golang:1.18.3
+# Docker image versions
+ARG go_ver=v1.18.6-alpine3.16.2
 
-#FROM ghcr.io/dopos/golang-alpine:v1.16.15-alpine3.14.3
-#RUN apk add --no-cache git curl
+# Docker images
+ARG go_img=ghcr.io/dopos/golang-alpine
 
-ENV APP_VERSION 0.1.0
+FROM ${go_img}:${go_ver}
 
-WORKDIR /opt/showonce
+RUN apk add --no-cache git curl
+
+WORKDIR /build
 COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-X main.version=`git describe --tags --always`" -a ./cmd/showonce
@@ -23,7 +26,8 @@ LABEL \
   org.opencontainers.image.licenses="MIT"
 
 WORKDIR /
-COPY --from=0 /opt/showonce/showonce .
+COPY --from=0 /build/showonce .
+
 # Need for SSL
 COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
