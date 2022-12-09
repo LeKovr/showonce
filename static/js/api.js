@@ -4,13 +4,13 @@ var ItemID;
 function pageLoaded() {
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get('id');
-  if (id == "" || id ===null) return;
+  if (id == "" || id === null) return;
   ItemID = id;
   document.getElementById("id_input").value=id;
-  console.log("Lookup meta for ID "+id)
+  console.log("Lookup meta for ID "+id);
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/api/item?id='+id);
-  xhr.setRequestHeader('Accept', 'application/json'); // TODO: Accept?
+  xhr.setRequestHeader('Accept', 'application/json');
   xhr.onreadystatechange = function() {
     if (xhr.readyState != 4) return;
     if (xhr.status != 200) {
@@ -20,7 +20,6 @@ function pageLoaded() {
     } else {
       var resp = JSON.parse(xhr.responseText);
       if (resp == undefined) return;
-      console.dir(resp);
       showItem(resp);
     }
   }
@@ -75,14 +74,14 @@ function sendForm(form, path) {
   div.innerHTML = '';
   console.dir(formData);
   var fields = Object.fromEntries(formData);
-  if (fields.title==''||fields.data=='') {
+  if (fields.title=='' || fields.data=='') {
     div.innerHTML = 'Title and data must be set';
     return false;
   }
   var data= JSON.stringify(fields);
   data.exp=Number(data.exp);
   xhr.open('POST', path);
-  xhr.setRequestHeader('Accept', 'application/json'); // TODO: Accept?
+  xhr.setRequestHeader('Accept', 'application/json');
   xhr.onreadystatechange = function() {
     if (xhr.readyState != 4) return;
     if (xhr.status != 200) {
@@ -114,7 +113,6 @@ function pageMyLoaded() {
     } else {
       var resp = JSON.parse(xhr.responseText);
       if (resp == undefined) return;
-      console.dir(resp);
       showStatItems(resp);
     }
   }
@@ -144,7 +142,6 @@ function pageListLoaded() {
     } else {
       var resp = JSON.parse(xhr.responseText);
       if (resp == undefined) return;
-      console.dir(resp);
       showItems(resp);
     }
   }
@@ -181,6 +178,7 @@ function addCell(row,text) {
   var newText = document.createTextNode(text);
   newCell.appendChild(newText);
 }
+
 function addCellHref(row,href,text) {
   var newCell = row.insertCell();
   var a = document.createElement('a');
@@ -191,16 +189,14 @@ function addCellHref(row,href,text) {
 
 function clearForm(form) {
   console.log('reset');
-  documentFiles = null;
-  document.getElementById('list').innerHTML = '';
-  document.querySelector('form').reset(); // clear file input
+  document.querySelector('form').reset();
   document.getElementById("log").innerHTML='';
   return true;
 }
 
 // code from https://gist.github.com/Peacegrove/5534309
 function disable_form(form, state) {
-  var elemTypes = ['input']; //, 'button', 'textarea', 'select'];
+  var elemTypes = ['input', 'button', 'textarea', 'select'];
   elemTypes.forEach(function callback(type) {
     var elems = form.getElementsByTagName(type);
     disable_elements(elems, state);
