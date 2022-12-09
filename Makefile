@@ -6,15 +6,15 @@ GO            ?= go
 CFG           ?= .env
 PRG           ?= $(shell basename $$PWD)
 
-# TODO: find: unrecognized: -printf
-# BusyBox v1.33.1 () multi-call binary.
-#SOURCES        = $(shell find .  -maxdepth 3 -mindepth 1 -path ./var -prune -o -name '*.go' -printf '%p\n')
+SOURCES        = $(shell find . -maxdepth 3 -mindepth 1 -path ./var -prune -o -name '*.go')
 
-SOURCES        = ./service/model.go ./service/storage.go ./service/api.go ./cmd/showonce/main.go ./app/auth.go ./app/app.go ./static/static.go
-
-DCAPE_DC_USED     = false
+# do not include docker-compose.yml from dcape
+# docker-compose can't build docker image if it included
+DCAPE_DC_USED  = false
 
 VERSION       ?= $(shell git describe --tags --always)
+# Last project tag
+RELEASE       ?= $(shell git describe --tags --abbrev=0)
 
 APP_ROOT      ?= .
 APP_SITE      ?= $(PRG).dev.lan
@@ -22,7 +22,6 @@ APP_PROTO     ?= http
 
 IMAGE         ?= $(PRG)
 IMAGE_VER     ?= latest
-
 
 AS_TYPE       ?= gitea
 AS_HOST       ?= http://gitea:8080
@@ -77,8 +76,8 @@ $(PRG): $(SOURCES)
 	$(GO) build -ldflags "-X main.version=$(VERSION)" ./cmd/$(PRG)
 
 run: $(PRG)
-	./$(PRG) --as.my_url http://$(APP_SITE):8080 --root static  --debug --as.cookie_name=narra_local
-
+	@echo Open http://$(APP_SITE):8080
+	./$(PRG) --root static --log.debug --as.cookie_name showonce
 
 ## Format go sources
 fmt:
@@ -114,6 +113,11 @@ cov-html: cov
 cov-clean:
 	rm -f coverage.*
 
+## Changes from last tag
+changelog:
+	@echo Changes since $(RELEASE)
+	@echo
+	@git log $(RELEASE)..@ --pretty=format:"* %s"
 
 # ------------------------------------------------------------------------------
 ## Docker operations
