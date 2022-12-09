@@ -17,7 +17,7 @@ services:
     networks:
       - lan
     command:
-      --debug --as.my_url ${APP_PROTO}://${APP_SITE} --as.cookie_name showonce_token
+      --log.debug --as.my_url ${APP_PROTO}://${APP_SITE} --as.cookie_name showonce_token
     environment:
       - AS_TYPE
       - AS_HOST
