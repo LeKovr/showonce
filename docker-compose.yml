@@ -3,7 +3,8 @@ version: '2.1'
 services:
 
   app:
-    image: ${IMAGE}:${IMAGE_VER}
+# image stops build via drone
+#    image: ${IMAGE}:${IMAGE_VER}
     labels:
       - traefik.enable=true
       - dcape.traefik.tag=${DCAPE_TAG}
