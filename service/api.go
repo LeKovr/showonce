@@ -3,12 +3,12 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
 
 	"github.com/go-logr/logr"
+	jsoniter "github.com/json-iterator/go"
 )
 
 // Package debug level
@@ -23,11 +23,11 @@ func NewAPIService(userHeader string, store Storage) APIService {
 	return APIService{userHeader, store}
 }
 
-func (srv APIService) SetupRoutes(mux *http.ServeMux) {
+func (srv APIService) SetupRoutes(mux *http.ServeMux, privPrefix string) {
 	mux.HandleFunc("/api/item", srv.Item)
-	mux.HandleFunc("/my/api/new", srv.ItemCreate)
-	mux.HandleFunc("/my/api/items", srv.Items)
-	mux.HandleFunc("/my/api/stat", srv.Stats)
+	mux.HandleFunc(privPrefix + "api/new", srv.ItemCreate)
+	mux.HandleFunc(privPrefix + "api/items", srv.Items)
+	mux.HandleFunc(privPrefix + "api/stat", srv.Stats)
 }
 
 /*
@@ -52,6 +52,7 @@ func (srv APIService) ItemCreate(w http.ResponseWriter, r *http.Request) {
 	}
 	// parse request json
 	var req NewItemRequest
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &req)
 	if err != nil {
 		log.V(DL).Info("JSON parse error", "error", err.Error())
@@ -123,6 +124,7 @@ func response(w http.ResponseWriter, log logr.Logger, data interface{}, err erro
 		}
 		return
 	}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonResp, err := json.Marshal(data)
 	if err != nil {
 		log.V(DL).Info("JSON marshal error", "error", err.Error())
@@ -132,13 +134,3 @@ func response(w http.ResponseWriter, log logr.Logger, data interface{}, err erro
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResp)
 }
-
-/*
-payload, err := json.MarshalJSON()
-	if err != nil {
-		log.Println(err)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(payload)
-*/
