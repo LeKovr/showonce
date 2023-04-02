@@ -1,6 +1,6 @@
-module it.elfire.ru/itc/showonce
+module github.com/LeKovr/showonce
 
-go 1.18
+go 1.19
 
 replace SELF => ./
 
@@ -11,12 +11,12 @@ replace SELF => ./
 require (
 	SELF v0.0.0-00010101000000-000000000000
 	github.com/LeKovr/go-kit/config v0.2.0
-	github.com/LeKovr/go-kit/logger v0.2.0
+	github.com/LeKovr/go-kit/logger v0.2.1
 	github.com/dopos/narra v0.25.0
 	github.com/felixge/httpsnoop v1.0.3
-	github.com/go-logr/logr v1.2.3
+	github.com/go-logr/logr v1.2.4
 	github.com/json-iterator/go v1.1.12
-	github.com/oklog/ulid/v2 v2.0.2
+	github.com/oklog/ulid/v2 v2.1.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	golang.org/x/sync v0.1.0
 )
