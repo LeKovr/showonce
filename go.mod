@@ -8,6 +8,9 @@ replace SELF => ./
 
 //replace github.com/LeKovr/go-kit/logger => ../go-kit/logger
 
+// dependabot alerts #1 - #3
+require golang.org/x/net v0.7.0
+
 require (
 	SELF v0.0.0-00010101000000-000000000000
 	github.com/LeKovr/go-kit/config v0.2.0
