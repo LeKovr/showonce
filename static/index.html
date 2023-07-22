@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
     <script src="js/api.js"></script>
-    <link rel="stylesheet" type="text/css" href="/api.css">
+    <script src="js/showonce.js"></script>
+    <link rel="stylesheet" type="text/css" href="/showonce.css">
     <title>ShowOnce. One-time secrets service</title>
   </head>
 <html>
@@ -18,7 +19,8 @@
 </div>
 <div class="bottom">
   <div class="right">
-    Powered by <a href="https://it.elfire.ru/itc/showonce">showonce</a> v0.2.0
+    Powered by <a href="https://github.com/LeKovr/showonce">showonce</a> v1.0
+    | <a href="/openapi.html">API</a>
   </div>
 </div>
 <div class="content">
@@ -33,8 +35,8 @@
       <tr><td>Group</td><td><input type="text" name="group" size="10" disabled /></td></tr>
       <tr><td>Owner</td><td><input type="text" name="owner" size="10" disabled /></td></tr>
       <tr><td>Status</td><td><input type="text" name="status" size="10" disabled /></td></tr>
-      <tr><td>Created</td><td> <input type="text" name="created" size="40" disabled /></td></tr>
-      <tr><td>Modified</td><td><input type="text" name="modified"size="40" disabled /></td></tr>
+      <tr><td>Created</td><td> <input type="text" name="createdAt" size="40" disabled /></td></tr>
+      <tr><td>Modified</td><td><input type="text" name="modifiedAt"size="40" disabled /></td></tr>
       <tr><td colspan="2" align="center">
         <div id="data_request" style="display:none">
           <input type="button" value="Show" onclick="return showItemData();">

@@ -10,7 +10,7 @@ import (
 //go:embed *
 var embedFS embed.FS
 
-const embedRoot = "" //static"
+const embedRoot = "" //static/"
 
 func New(root string) (hfs http.FileSystem, err error) {
 	var serverRoot fs.FS

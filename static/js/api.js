@@ -1,237 +1,168 @@
-
-var ItemID;
-
-function pageLoaded() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('id');
-  if (id == "" || id === null) return;
-  ItemID = id;
-  document.getElementById("id_input").value=id;
-  console.log("Lookup meta for ID "+id);
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/api/item?id='+id);
-  xhr.setRequestHeader('Accept', 'application/json');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-    if (xhr.status != 200) {
-      console.log(xhr.status + ': ' + xhr.statusText);
-      div  = document.getElementById("log");
-      div.innerHTML=xhr.status + ': ' + xhr.statusText;
-    } else {
-      var resp = JSON.parse(xhr.responseText);
-      if (resp == undefined) return;
-      showItem(resp);
+var AppAPI = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
     }
-  }
-  xhr.send();
-}
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-function showItem(item) {
-  const { elements } = document.querySelector('form#metaform')
-  for (const [ key, value ] of Object.entries(item) ) {
-    const field = elements.namedItem(key)
-    var val = value;
-    if (key=='status') val=mkStatus(value)
-    else if (key=='created' || key=='modified') val=mkStamp(value);
-    field && (field.value = val)
-  }
-  document.getElementById('meta').style.display = 'initial';
-  // show button
-  if (item.status == 1) {
-    var div = document.getElementById('data_request');
-    div.style.display = 'initial';
-  }
-}
-
-function showItemData() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', '/api/item?id='+ItemID);
-  xhr.setRequestHeader('Accept', 'application/json'); // TODO: Accept?
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-    if (xhr.status != 200) {
-      console.log(xhr.status + ': ' + xhr.statusText);
-      if (xhr.status == 404) {
-        document.getElementById('data_request').style.display = 'none';
-        document.getElementById("log").innerText='Данные больше не доступны'
-      }
-    } else {
-      var resp = JSON.parse(xhr.responseText);
-      if (resp == undefined) return;
-      var text = document.getElementById('item_data');
-      text.value = resp;
-      document.getElementById('data_request').style.display = 'none';
-      document.getElementById('data_response').style.display = 'initial';
-    }
-  }
-  xhr.send();
-}
-
-function sendForm(form, path) {
-  var div  = document.getElementById("log"),
-      xhr  = new XMLHttpRequest(),
-      formData = new FormData(form);
-  div.innerHTML = '';
-  console.dir(formData);
-  var fields = Object.fromEntries(formData);
-  if (fields.title=='' || fields.data=='') {
-    div.innerHTML = 'Title and data must be set';
-    return false;
-  }
-  var data= JSON.stringify(fields);
-  data.exp=Number(data.exp);
-  xhr.open('POST', path);
-  xhr.setRequestHeader('Accept', 'application/json');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-    if (xhr.status != 200) {
-      console.log(xhr.status + ': ' + xhr.statusText);
-    } else {
-      var resp = JSON.parse(xhr.responseText);
-      if (resp == undefined) return;
-
-      var a = document.createElement('a');
-      //a.target = '_blank';
-      a.href = '/?id='+resp;
-      a.innerText = resp;
-      div.innerText='Saved. ID: ';
-      div.appendChild(a);
-    }
-  }
-  xhr.send(data);
-  return false;
-}
-
-function pageMyLoaded() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/my/api/stat');
-  xhr.setRequestHeader('Accept', 'application/json');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-    if (xhr.status != 200) {
-      console.log(xhr.status + ': ' + xhr.statusText);
-    } else {
-      var resp = JSON.parse(xhr.responseText);
-      if (resp == undefined) return;
-      showStatItems(resp);
-    }
-  }
-  xhr.send();
-}
-
-function showStatItems(item) {
-  var tbodyRef = document.getElementById('stat').getElementsByTagName('tbody')[0];
-  for (const [ key, value ] of Object.entries(item) ) {
-    var newRow = tbodyRef.insertRow();
-    addCell(newRow,key);
-    const array = ["wait", "read", "expired","total"];
-    array.forEach(function (item, index) {
-      addCell(newRow,value[item]);
-    });
-  }  
-}
-
-function pageListLoaded() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/my/api/items');
-  xhr.setRequestHeader('Accept', 'application/json');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-    if (xhr.status != 200) {
-      console.log(xhr.status + ': ' + xhr.statusText);
-    } else {
-      var resp = JSON.parse(xhr.responseText);
-      if (resp == undefined) return;
-      showItems(resp);
-    }
-  }
-  xhr.send();
-}
-
-function showItems(item) {
-  var tbodyRef = document.getElementById('items').getElementsByTagName('tbody')[0];
-  for (const [ key, value ] of Object.entries(item) ) {
-    var newRow = tbodyRef.insertRow();
-    var meta = value.meta;
-    addCellHref(newRow,'/?id='+value.id,meta.title);
-    addCell(newRow,meta.group);
-    addCell(newRow,mkStatus(meta.status));
-    addCell(newRow,mkStamp(meta.created));
-    addCell(newRow,mkStamp(meta.modified));
-  }  
-}
-
-function mkStatus(v){
-  let map = new Map([ [ 1, 'Wait' ], [ 2, 'Read' ], [3, 'Expired' ], [ 4, 'Cleared' ] ]);
-  return map.get(v);
-}
-
-function mkStamp(v){
-  var json = '"'+v+'"';
-  var dateStr = JSON.parse(json);  
-  var date = new Date(dateStr);
-  return dateFormatted(date)
-}
-
-function addCell(row,text) {
-  var newCell = row.insertCell();
-  var newText = document.createTextNode(text);
-  newCell.appendChild(newText);
-}
-
-function addCellHref(row,href,text) {
-  var newCell = row.insertCell();
-  var a = document.createElement('a');
-  a.href = href;
-  a.innerText = text;
-  newCell.appendChild(a);
-}
-
-function clearForm(form) {
-  console.log('reset');
-  document.querySelector('form').reset();
-  document.getElementById("log").innerHTML='';
-  return true;
-}
-
-// code from https://gist.github.com/Peacegrove/5534309
-function disable_form(form, state) {
-  var elemTypes = ['input', 'button', 'textarea', 'select'];
-  elemTypes.forEach(function callback(type) {
-    var elems = form.getElementsByTagName(type);
-    disable_elements(elems, state);
+  // zgen/ts/proto/service.pb.ts
+  var service_pb_exports = {};
+  __export(service_pb_exports, {
+    ItemStatus: () => ItemStatus,
+    PrivateService: () => PrivateService,
+    PublicService: () => PublicService
   });
-}
 
-// Disables a collection of form-elements.
-function disable_elements(elements, state) {
-  var length = elements.length;
-  while(length--) {
-    var e = elements[length];
-    if (e.classList.contains('reversed')) {
-      e.disabled = !state;
-    } else {
-      e.disabled = state;
+  // zgen/ts/fetch.pb.ts
+  var b64 = new Array(64);
+  var s64 = new Array(123);
+  for (let i = 0; i < 64; )
+    s64[b64[i] = i < 26 ? i + 65 : i < 52 ? i + 71 : i < 62 ? i - 4 : i - 59 | 43] = i++;
+  function b64Encode(buffer, start, end) {
+    let parts = null;
+    const chunk = [];
+    let i = 0, j = 0, t;
+    while (start < end) {
+      const b = buffer[start++];
+      switch (j) {
+        case 0:
+          chunk[i++] = b64[b >> 2];
+          t = (b & 3) << 4;
+          j = 1;
+          break;
+        case 1:
+          chunk[i++] = b64[t | b >> 4];
+          t = (b & 15) << 2;
+          j = 2;
+          break;
+        case 2:
+          chunk[i++] = b64[t | b >> 6];
+          chunk[i++] = b64[b & 63];
+          j = 0;
+          break;
+      }
+      if (i > 8191) {
+        (parts || (parts = [])).push(String.fromCharCode.apply(String, chunk));
+        i = 0;
+      }
     }
+    if (j) {
+      chunk[i++] = b64[t];
+      chunk[i++] = 61;
+      if (j === 1)
+        chunk[i++] = 61;
+    }
+    if (parts) {
+      if (i)
+        parts.push(String.fromCharCode.apply(String, chunk.slice(0, i)));
+      return parts.join("");
+    }
+    return String.fromCharCode.apply(String, chunk.slice(0, i));
   }
-}
+  function replacer(key, value) {
+    if (value && value.constructor === Uint8Array) {
+      return b64Encode(value, 0, value.length);
+    }
+    return value;
+  }
+  function fetchReq(path, init) {
+    const { pathPrefix, ...req } = init || {};
+    const url = pathPrefix ? `${pathPrefix}${path}` : path;
+    return fetch(url, req).then((r) => r.json().then((body) => {
+      if (!r.ok) {
+        throw body;
+      }
+      return body;
+    }));
+  }
+  function isPlainObject(value) {
+    const isObject = Object.prototype.toString.call(value).slice(8, -1) === "Object";
+    const isObjLike = value !== null && isObject;
+    if (!isObjLike || !isObject) {
+      return false;
+    }
+    const proto = Object.getPrototypeOf(value);
+    const hasObjectConstructor = typeof proto === "object" && proto.constructor === Object.prototype.constructor;
+    return hasObjectConstructor;
+  }
+  function isPrimitive(value) {
+    return ["string", "number", "boolean"].some((t) => typeof value === t);
+  }
+  function isZeroValuePrimitive(value) {
+    return value === false || value === 0 || value === "";
+  }
+  function flattenRequestPayload(requestPayload, path = "") {
+    return Object.keys(requestPayload).reduce(
+      (acc, key) => {
+        const value = requestPayload[key];
+        const newPath = path ? [path, key].join(".") : key;
+        const isNonEmptyPrimitiveArray = Array.isArray(value) && value.every((v) => isPrimitive(v)) && value.length > 0;
+        const isNonZeroValuePrimitive = isPrimitive(value) && !isZeroValuePrimitive(value);
+        let objectToMerge = {};
+        if (isPlainObject(value)) {
+          objectToMerge = flattenRequestPayload(value, newPath);
+        } else if (isNonZeroValuePrimitive || isNonEmptyPrimitiveArray) {
+          objectToMerge = { [newPath]: value };
+        }
+        return { ...acc, ...objectToMerge };
+      },
+      {}
+    );
+  }
+  function renderURLSearchParams(requestPayload, urlPathParams = []) {
+    const flattenedRequestPayload = flattenRequestPayload(requestPayload);
+    const urlSearchParams = Object.keys(flattenedRequestPayload).reduce(
+      (acc, key) => {
+        const value = flattenedRequestPayload[key];
+        if (urlPathParams.find((f) => f === key)) {
+          return acc;
+        }
+        return Array.isArray(value) ? [...acc, ...value.map((m) => [key, m.toString()])] : acc = [...acc, [key, value.toString()]];
+      },
+      []
+    );
+    return new URLSearchParams(urlSearchParams).toString();
+  }
 
-// Format datetime
-// code from http://stackoverflow.com/a/32062237
-// with changed result formatting
-function dateFormatted(date) {
-  var month = date.getMonth() + 1;
-  var day = date.getDate();
-  var hour = date.getHours();
-  var min = date.getMinutes();
-  var sec = date.getSeconds();
-
-  month = (month < 10 ? "0" : "") + month;
-  day = (day < 10 ? "0" : "") + day;
-  hour = (hour < 10 ? "0" : "") + hour;
-  min = (min < 10 ? "0" : "") + min;
-  sec = (sec < 10 ? "0" : "") + sec;
-
-  var str = day + "." + month + "." + date.getFullYear() + " " + hour + ":" + min + ":" + sec;
-  return str;
-}
+  // zgen/ts/proto/service.pb.ts
+  var ItemStatus = /* @__PURE__ */ ((ItemStatus2) => {
+    ItemStatus2["UNKNOWN"] = "UNKNOWN";
+    ItemStatus2["WAIT"] = "WAIT";
+    ItemStatus2["READ"] = "READ";
+    ItemStatus2["EXPIRED"] = "EXPIRED";
+    ItemStatus2["CLEARED"] = "CLEARED";
+    return ItemStatus2;
+  })(ItemStatus || {});
+  var PublicService = class {
+    static GetMetadata(req, initReq) {
+      return fetchReq(`/api/item?${renderURLSearchParams(req, [])}`, { ...initReq, method: "GET" });
+    }
+    static GetData(req, initReq) {
+      return fetchReq(`/api/item/${req["id"]}`, { ...initReq, method: "POST" });
+    }
+  };
+  var PrivateService = class {
+    static NewMessage(req, initReq) {
+      return fetchReq(`/my/api/new`, { ...initReq, method: "POST", body: JSON.stringify(req, replacer) });
+    }
+    static GetItems(req, initReq) {
+      return fetchReq(`/my/api/items?${renderURLSearchParams(req, [])}`, { ...initReq, method: "GET" });
+    }
+    static GetStats(req, initReq) {
+      return fetchReq(`/my/api/stat?${renderURLSearchParams(req, [])}`, { ...initReq, method: "GET" });
+    }
+  };
+  return __toCommonJS(service_pb_exports);
+})();
