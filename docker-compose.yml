@@ -1,22 +1,10 @@
-version: '2.1'
+# custom app config
+# overrides DCAPE/apps/drone/dcape-app/docker-compose.yml
+
+version: '2'
 
 services:
-
   app:
-# image stops build via drone
-#    image: ${IMAGE}:${IMAGE_VER}
-    labels:
-      - traefik.enable=true
-      - dcape.traefik.tag=${DCAPE_TAG}
-      - traefik.http.routers.${APP_TAG}.rule=Host(`${APP_SITE:?Must be set}`)
-      - traefik.http.routers.${APP_TAG}.tls=${USE_TLS}
-      - traefik.http.routers.${APP_TAG}.tls.certresolver=letsEncrypt
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    restart: always
-    networks:
-      - lan
     command:
       --log.debug --as.my_url ${APP_PROTO}://${APP_SITE} --as.cookie_name showonce_token
     environment:
@@ -27,10 +15,9 @@ services:
       - AS_CLIENT_KEY
       - AS_COOKIE_SIGN_KEY
       - AS_COOKIE_CRYPT_KEY
+
     build:
       context: .
-
-networks:
-  lan:
-    external:
-      name: ${DCAPE_NET}
+      args:
+        APP_VER: "${APP_VER:-}"
+        APP: "${APP_NAME:-}"

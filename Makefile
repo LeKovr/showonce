@@ -38,19 +38,28 @@ DOCKER_IMAGE  ?= ghcr.io/lekovr/$(PRG)
 # -----------------------------------------------------------------------------
 # Docker image config
 
-# Hardcoded in docker-compose.yml service name
-DC_SERVICE    ?= app
+#- App name
+APP_NAME      ?= $(PRG)
 
 #- Docker-compose project name (container name prefix)
 PROJECT_NAME  ?= $(PRG)
 
+# Hardcoded in docker-compose.yml service name
+DC_SERVICE    ?= app
+
+#- Docker image name
+IMAGE         ?= $(DOCKER_IMAGE)
+
+#- Docker image tag
+IMAGE_VER     ?= latest
+
 # -----------------------------------------------------------------------------
 # App config
 
-#- Docker container port
-LISTEN        ?= 8080
+#- Docker container addr:port
+LISTEN        ?= :8080
 
-# 
+# app url prefix
 APP_PROTO     ?= http
 
 #- Auth service type
@@ -78,6 +87,7 @@ ifeq ($(shell test -e $(DCAPE_ROOT)/Makefile.app && echo -n yes),yes)
   include $(DCAPE_ROOT)/Makefile.app
 endif
 
+-include $(CFG).bak
 -include $(CFG)
 export
 
@@ -104,7 +114,7 @@ build-standalone: $(PRG_DEST)
 
 ## Build & run app
 run: $(PRG)
-	./$(PRG) --log.debug --root=static
+	./$(PRG) --log.debug --root=static --listen $(LISTEN)
 
 ## Format go sources
 fmt:
@@ -126,10 +136,13 @@ vet:
 ## Run tests
 test: lint vet coverage.out
 
+test-race:
+	$(GO) test -tags test -race -covermode=atomic -coverprofile=$@ ./...
+
 # internal target
 coverage.out: $(SOURCES)
-	#GIN_MODE=release $(GO) test -test.v -test.race -coverprofile=$@ -covermode=atomic ./...
-	GIN_MODE=release $(GO) test -tags test -race -covermode=atomic -coverprofile=$@ ./...
+	@#GIN_MODE=release $(GO) test -test.v -test.race -coverprofile=$@ -covermode=atomic ./...
+	$(GO) test -tags test -covermode=atomic -coverprofile=$@ ./...
 
 ## Open coverage report in browser
 cov-html: cov
@@ -188,7 +201,7 @@ static/js/api.js: zgen/ts/proto/service.pb.ts
 	  zgen/ts/proto/service.pb.ts --bundle --outfile=/mnt/pwd/static/js/api.js --global-name=AppAPI
 
 grpc-test:
-	docker run fullstorydev/grpcurl localhost:$(LISTEN) list
+	docker run fullstorydev/grpcurl -plaintext localhost$(LISTEN) list
 
 # ------------------------------------------------------------------------------
 ## Prepare distros
@@ -266,3 +279,10 @@ ghcr:
 	docker push $(DOCKER_IMAGE):latest
 
 # ------------------------------------------------------------------------------
+
+# Load AUTH_TOKEN
+-include $(DCAPE_ROOT)/var/oauth2-token
+
+# create OAuth application credentials
+oauth2-create:
+	$(MAKE) -s oauth2-app-create HOST=$(AS_HOST) URL=/login PREFIX=AS
