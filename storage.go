@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/oklog/ulid/v2"
-	//"github.com/patrickmn/go-cache"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	cache "zgo.at/zcache/v2"
 
@@ -28,9 +27,9 @@ type Storage struct {
 }
 
 var (
-	ErrNoUniqueWithinLimit = errors.New("Cannot create unique id")
-	ErrNotFound            = errors.New("Item not found")
-	ErrDataCorrupted       = errors.New("Item data was corrupted")
+	ErrNoUniqueWithinLimit = errors.New("cannot create unique id")
+	ErrNotFound            = errors.New("item not found")
+	ErrDataCorrupted       = errors.New("item data was corrupted")
 )
 
 func NewStorage(cfg StorageConfig) Storage {
@@ -43,21 +42,20 @@ func NewStorage(cfg StorageConfig) Storage {
 }
 
 func (store Storage) SetMeta(owner string, req *gen.NewItemRequest) (*ulid.ULID, error) {
-
 	// Validate expiration
 	var expire time.Duration
 	if req.Expire != "" {
 		if req.ExpireUnit == "d" {
-			days, err := strconv.Atoi(req.Expire)
-			if err != nil {
-				return nil, fmt.Errorf("Expire days parse error: %w", err)
+			if days, err := strconv.Atoi(req.Expire); err != nil {
+				return nil, fmt.Errorf("expire days parse error: %w", err)
+			} else {
+				expire = time.Duration(days) * time.Hour * 24
 			}
-			expire = time.Duration(days) * time.Hour * 24
 		} else {
 			var err error
 			expire, err = time.ParseDuration(fmt.Sprintf("%s%s", req.Expire, req.ExpireUnit))
 			if err != nil {
-				return nil, fmt.Errorf("Expire parse error: %w", err)
+				return nil, fmt.Errorf("expire parse error: %w", err)
 			}
 		}
 	}
@@ -83,9 +81,8 @@ func (store Storage) SetMeta(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 		err = store.Data.AddWithExpire(id.String(), req.Data, expire)
 		if err == nil {
 			// data is unique
-			store.Meta.Add(id.String(), &meta)
-			return &id, nil
-
+			err = store.Meta.Add(id.String(), &meta)
+			return &id, err
 		}
 	}
 	return nil, ErrNoUniqueWithinLimit
@@ -113,14 +110,17 @@ func (store Storage) GetData(id string) (*gen.ItemData, error) {
 	meta.ModifiedAt = timestamppb.Now()
 
 	err = store.Meta.Replace(id, meta)
+	if err != nil {
+		return nil, err
+	}
 	store.Data.Delete(id)
 	rv := gen.ItemData{Data: data}
 	return &rv, nil
 }
 
-func (store Storage) Items(owner string) (items *gen.ItemList, err error) {
+func (store Storage) Items(owner string) (*gen.ItemList, error) {
 	cacheItems := store.Meta.Items()
-	items = &gen.ItemList{Items: []*gen.ItemMetaWithId{}}
+	items := &gen.ItemList{Items: []*gen.ItemMetaWithId{}}
 	for k, v := range cacheItems {
 		meta := v.Object
 		if meta.Owner != owner {
@@ -129,12 +129,12 @@ func (store Storage) Items(owner string) (items *gen.ItemList, err error) {
 		checkExpire(meta)
 		items.Items = append(items.Items, &gen.ItemMetaWithId{Id: k, Meta: meta})
 	}
-	return
+	return items, nil
 }
 
-func (store Storage) Stats(owner string) (stat *gen.StatsResponse, err error) {
+func (store Storage) Stats(owner string) (*gen.StatsResponse, error) {
 	cacheItems := store.Meta.Items()
-	stat = &gen.StatsResponse{My: &gen.Stats{}, Other: &gen.Stats{}}
+	stat := &gen.StatsResponse{My: &gen.Stats{}, Other: &gen.Stats{}}
 	for _, v := range cacheItems {
 		meta := v.Object
 		checkExpire(meta)
@@ -154,7 +154,7 @@ func (store Storage) Stats(owner string) (stat *gen.StatsResponse, err error) {
 			curr.Expired++
 		}
 	}
-	return
+	return stat, nil
 }
 
 // TODO: replace with OnEvicted

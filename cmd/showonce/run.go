@@ -21,6 +21,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 
@@ -86,11 +87,12 @@ func Run(exitFunc func(code int)) {
 			return md
 		}),
 	)
-	// opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	//  err := gw.RegisterYourServiceHandlerFromEndpoint(ctx, mux,  *grpcServerEndpoint, opts)
 	clientAddr := chooseClientAddr(cfg.Listen)
+	dialOpts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
 	// setting up a dial up for gRPC service by specifying endpoint/target url
-	err = gen.RegisterPublicServiceHandlerFromEndpoint(context.Background(), mux, clientAddr, []grpc.DialOption{grpc.WithInsecure()})
+	err = gen.RegisterPublicServiceHandlerFromEndpoint(context.Background(), mux, clientAddr, dialOpts)
 	if err != nil {
 		return
 	}
@@ -139,12 +141,13 @@ func Run(exitFunc func(code int)) {
 	grpcL := m.Match(cmux.HTTP2())
 	// start server
 
-	// passing dummy listener
-	go srv.Serve(httpL)
-	// passing dummy listener
-	go grpcSever.Serve(grpcL)
-
 	g, gCtx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		return srv.Serve(httpL)
+	})
+	g.Go(func() error {
+		return grpcSever.Serve(grpcL)
+	})
 	g.Go(func() error {
 		log.V(1).Info("Start", "addr", cfg.Listen)
 		return m.Serve()
@@ -153,14 +156,14 @@ func Run(exitFunc func(code int)) {
 		<-gCtx.Done()
 		log.V(1).Info("Shutdown")
 		stop()
-		timedCtx, cancel := context.WithTimeout(context.Background(), cfg.GracePeriod)
+		timedCtx, cancel := context.WithTimeout(ctx, cfg.GracePeriod)
 		defer cancel()
 		return srv.Shutdown(timedCtx)
 	})
 	if er := g.Wait(); er != nil && !errors.Is(er, net.ErrClosed) { //er != http.ErrServerClosed {
 		err = er
 	}
-	log.Info("Exit", "err", err)
+	log.Info("Exit")
 }
 
 // withReqLogger prints HTTP request log

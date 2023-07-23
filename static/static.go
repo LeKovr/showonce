@@ -1,3 +1,4 @@
+// Package static содержит статические страницы встроенного сайта.
 package static
 
 import (
@@ -12,8 +13,10 @@ var embedFS embed.FS
 
 const embedRoot = "" //static/"
 
-func New(root string) (hfs http.FileSystem, err error) {
+// New возвращает втроенную ФС (если root =="") или заданную (иначе).
+func New(root string) (http.FileSystem, error) {
 	var serverRoot fs.FS
+	var err error
 	if root != "" {
 		// take real filesystem
 		serverRoot = os.DirFS(root)
@@ -25,8 +28,8 @@ func New(root string) (hfs http.FileSystem, err error) {
 		serverRoot = embedFS
 	}
 	if err != nil {
-		return
+		return nil, err
 	}
-	hfs = http.FS(serverRoot)
-	return
+	hfs := http.FS(serverRoot)
+	return hfs, nil
 }

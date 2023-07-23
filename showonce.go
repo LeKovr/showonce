@@ -1,3 +1,6 @@
+/*
+Package showonce - реализация публичного и приватного сервиса.
+*/
 package showonce
 
 import (
@@ -13,68 +16,75 @@ import (
 
 var errMissingMetadata = status.Errorf(codes.InvalidArgument, "no incoming metadata in rpc context")
 
+// PublicServiceImpl - реализация PublicService.
 type PublicServiceImpl struct {
 	gen.UnimplementedPublicServiceServer
 	Store Storage
 }
 
+// NewPublicService - создать PublicService.
 func NewPublicService(db Storage) *PublicServiceImpl {
 	return &PublicServiceImpl{Store: db}
 }
 
-// GetMetadata - вернуть метаданные по id
-func (service PublicServiceImpl) GetMetadata(ctx context.Context, id *gen.ItemId) (rv *gen.ItemMeta, err error) {
+// GetMetadata - вернуть метаданные по id.
+func (service PublicServiceImpl) GetMetadata(ctx context.Context, id *gen.ItemId) (*gen.ItemMeta, error) {
 	// TODO:	log := logr.FromContextOrDiscard(r.Context())
 	log.Print("WANT", id)
 	//tn := timestamppb.Now()
 	//rv = &gen.ItemMeta{Title: "message", Status: 1, CreatedAt: tn, ModifiedAt: tn}
-	rv, err = service.Store.GetMeta(id.Id)
+	rv, err := service.Store.GetMeta(id.Id)
 	return rv, err
 }
 
-// GetData -вернуть контент по id
-func (service PublicServiceImpl) GetData(ctx context.Context, id *gen.ItemId) (rv *gen.ItemData, err error) {
-	rv, err = service.Store.GetData(id.Id)
+// GetData -вернуть контент по id.
+func (service PublicServiceImpl) GetData(ctx context.Context, id *gen.ItemId) (*gen.ItemData, error) {
+	rv, err := service.Store.GetData(id.Id)
 	return rv, err
 }
 
+// PrivateServiceImpl - реадизация PrivateService.
 type PrivateServiceImpl struct {
 	gen.UnimplementedPrivateServiceServer
 	Store Storage
 }
 
+// NewPrivateService - создать PrivateService.
 func NewPrivateService(db Storage) *PrivateServiceImpl {
 	return &PrivateServiceImpl{Store: db}
 }
 
-// создать контент
-func (service PrivateServiceImpl) NewMessage(ctx context.Context, req *gen.NewItemRequest) (id *gen.ItemId, err error) {
+// NewMessage - создать контент.
+func (service PrivateServiceImpl) NewMessage(ctx context.Context, req *gen.NewItemRequest) (*gen.ItemId, error) {
 	user, err := fetchUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	idStr, err := service.Store.SetMeta(*user, req)
-	return &gen.ItemId{Id: idStr.String()}, err
+	if err != nil {
+		return nil, err
+	}
+	return &gen.ItemId{Id: idStr.String()}, nil
 }
 
-// вернуть список своих текстов
-func (service PrivateServiceImpl) GetItems(ctx context.Context, _ *emptypb.Empty) (rv *gen.ItemList, err error) {
+// GetItems - вернуть список своих текстов.
+func (service PrivateServiceImpl) GetItems(ctx context.Context, _ *emptypb.Empty) (*gen.ItemList, error) {
 	user, err := fetchUser(ctx)
 	if err != nil {
 		return nil, err
 	}
-	rv, err = service.Store.Items(*user)
+	rv, err := service.Store.Items(*user)
 	return rv, err
 }
 
-// общая статистика (всего/активных текстов, макс дата активного текста)
-func (service PrivateServiceImpl) GetStats(ctx context.Context, _ *emptypb.Empty) (rv *gen.StatsResponse, err error) {
+// GetStats - общая статистика (всего/активных текстов, макс дата активного текста).
+func (service PrivateServiceImpl) GetStats(ctx context.Context, _ *emptypb.Empty) (*gen.StatsResponse, error) {
 	user, err := fetchUser(ctx)
 	if err != nil {
 		return nil, err
 	}
-	rv, err = service.Store.Stats(*user)
+	rv, err := service.Store.Stats(*user)
 	return rv, err
 }
 
