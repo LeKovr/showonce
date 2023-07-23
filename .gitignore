@@ -2,3 +2,4 @@
 showonce
 !cmd/showonce
 coverage.out
+bud.lock
