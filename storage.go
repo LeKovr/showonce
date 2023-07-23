@@ -46,11 +46,11 @@ func (store Storage) SetMeta(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 	var expire time.Duration
 	if req.Expire != "" {
 		if req.ExpireUnit == "d" {
-			if days, err := strconv.Atoi(req.Expire); err != nil {
+			days, err := strconv.Atoi(req.Expire)
+			if err != nil {
 				return nil, fmt.Errorf("expire days parse error: %w", err)
-			} else {
-				expire = time.Duration(days) * time.Hour * 24
 			}
+			expire = time.Duration(days) * time.Hour * 24
 		} else {
 			var err error
 			expire, err = time.ParseDuration(fmt.Sprintf("%s%s", req.Expire, req.ExpireUnit))
