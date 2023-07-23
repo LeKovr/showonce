@@ -93,6 +93,9 @@ linters:
     - godot
     - gofumpt
     - gci
+    # temp: disputable rules
+    - nestif
+    - funlen
 
 issues:
   exclude-use-default: false

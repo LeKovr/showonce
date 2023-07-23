@@ -205,15 +205,15 @@ func Setup(options ..Option) (JAST, error) {
 
 main() {
 
-app,err := jast.Setup(cfg,
-  jast.logger(),
-  jast.UseHTTP(true),
-  jast.GRPC("/app",pubService),
-  jast.GRPC("/my/app",privService),
-  jast.Static(openapi),
-  jast.Static(openapiUI),
+app := jast.Setup(cfg).
+  Logger(log).
+  UseHTTP(true).
+  GRPC("/app",pubService).
+  GRPC("/my/app",privService).
+  Static(openapi).
+  Static(openapiUI)
 //...
-  jast.Handlers()
+err = app.Serve()
 
 
 )
