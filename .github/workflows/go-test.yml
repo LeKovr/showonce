@@ -2,7 +2,9 @@ name: GoTest
 
 on:
   push:
-    branches: [ master, v* ]
+    branches-ignore:
+      - 'dependabot/**'
+  pull_request:
 
 jobs:
   test:
