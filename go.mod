@@ -7,6 +7,7 @@ require (
 	github.com/LeKovr/go-kit/logger v0.2.2
 	github.com/dopos/narra v0.26.0
 	github.com/felixge/httpsnoop v1.0.3
+	github.com/go-logr/logr v1.2.4
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/soheilhy/cmux v0.1.5
@@ -20,7 +21,6 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/zerologr v1.2.3 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.3.0 // indirect

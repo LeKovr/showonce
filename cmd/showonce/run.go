@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/felixge/httpsnoop"
+	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/soheilhy/cmux"
 	"golang.org/x/sync/errgroup"
@@ -41,6 +42,7 @@ import (
 // Config holds all config vars
 type Config struct {
 	Listen      string        `long:"listen" default:":8080" description:"Addr and port which server listens at"`
+	ListenGRPC  string        `long:"listen_grpc" default:":8081" description:"Addr and port which GRPC pub server listens at"`
 	Root        string        `long:"root" env:"ROOT" default:""  description:"Static files root directory"`
 	PrivPrefix  string        `long:"priv" default:"/my/" description:"URI prefix for pages which requires auth"`
 	GracePeriod time.Duration `long:"grace" default:"1m" description:"Stop grace period"`
@@ -71,28 +73,47 @@ func Run(exitFunc func(code int)) {
 
 	db := app.NewStorage(cfg.Storage)
 
-	// create new gRPC server
-	grpcSever := grpc.NewServer()
-	// Register reflection service on gRPC server.
-	reflection.Register(grpcSever)
-	// register the PublicServiceServerImpl on the gRPC server
-	gen.RegisterPublicServiceServer(grpcSever, app.NewPublicService(db))
-	// creating mux for gRPC gateway. This will multiplex or route request different gRPC service
+	Interceptor := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		// Invoke 'handler' to use your gRPC server implementation and get
+		// the response.
+		log.Info("ADD GRPC logger")
+
+		return handler(logr.NewContext(ctx, log), req)
+	}
+
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(Interceptor),
+	}
+
+	// Public GRPC Service
+	// Доступен извне, отдельный порт
+	grpcPubSever := grpc.NewServer(opts...)
+	gen.RegisterPublicServiceServer(grpcPubSever, app.NewPublicService(db))
+	reflection.Register(grpcPubSever)
+	muxPub := runtime.NewServeMux()
+	dialOpts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+	err = gen.RegisterPublicServiceHandlerFromEndpoint(context.Background(), muxPub, cfg.ListenGRPC, dialOpts)
+	if err != nil {
+		return
+	}
+
+	// Private GRPC Service
+	// Доступен только через HTTP
+	// Авторизацию делает HTTP Handler
+	grpcPrivSever := grpc.NewServer(opts...) // TODO: UnaryInterceptor: md["user"]!=""
+	gen.RegisterPrivateServiceServer(grpcPrivSever, app.NewPrivateService(db))
 	mux := runtime.NewServeMux(
-		// handle incoming headers
 		runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
-			header := request.Header.Get("Authorization")
-			// send all the headers received from the client
-			md := metadata.Pairs("auth", header)
+			userName := request.Header.Get(cfg.AuthServer.UserHeader)
+			log.Info("Got GRPC", "user", userName)
+			md := metadata.Pairs("user", userName)
 			return md
 		}),
 	)
 	clientAddr := chooseClientAddr(cfg.Listen)
-	dialOpts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
-	// setting up a dial up for gRPC service by specifying endpoint/target url
-	err = gen.RegisterPublicServiceHandlerFromEndpoint(context.Background(), mux, clientAddr, dialOpts)
+	err = gen.RegisterPrivateServiceHandlerFromEndpoint(context.Background(), mux, clientAddr, dialOpts)
 	if err != nil {
 		return
 	}
@@ -100,18 +121,15 @@ func Run(exitFunc func(code int)) {
 	// static pages server
 	hfs, _ := static.New(cfg.Root)
 	fileServer := http.FileServer(hfs)
-	muxH := http.NewServeMux()
-	muxH.Handle("/", fileServer)
+	muxHTTP := http.NewServeMux()
+	muxHTTP.Handle("/", fileServer)
 
-	//	api := app.NewAPIService(cfg.AuthServer.UserHeader, db)
-	//	api.SetupRoutes(mux, cfg.PrivPrefix)
-
+	// Setup OAuth
 	cfg.AuthServer.Do401 = true // we need redirect instead status 401
-	// ? cfg.AuthServer.CallBackURL
 	auth := narra.New(&cfg.AuthServer)
-	auth.SetupRoutes(muxH, cfg.PrivPrefix)
+	auth.SetupRoutes(muxHTTP, cfg.PrivPrefix)
 	re := regexp.MustCompile("^" + cfg.PrivPrefix)
-	hh := auth.ProtectMiddleware(muxH, re)
+	hh := auth.ProtectMiddleware(withGW(mux, muxPub, muxHTTP), re)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
@@ -120,24 +138,31 @@ func Run(exitFunc func(code int)) {
 	// Creating a normal HTTP server
 	srv := &http.Server{
 		Addr:    cfg.Listen,
-		Handler: withReqLogger(withGW(mux, hh)),
+		Handler: withReqLogger(hh),
 		BaseContext: func(_ net.Listener) context.Context {
 			return ctx
 		},
 	}
 
 	// creating a listener for server
-	var l net.Listener
-	l, err = net.Listen("tcp", cfg.Listen)
+	var listenerPub net.Listener
+	listenerPub, err = net.Listen("tcp", cfg.ListenGRPC)
 	if err != nil {
 		return
 	}
-	m := cmux.New(l)
+	// creating a listener for server
+	var listener net.Listener
+	listener, err = net.Listen("tcp", cfg.Listen)
+	if err != nil {
+		return
+	}
+	m := cmux.New(listener)
 
 	// a different listener for HTTP1
 	httpL := m.Match(cmux.HTTP1Fast())
 
 	// a different listener for HTTP2 since gRPC uses HTTP2
+	// do not listen GRPC at cfg.Listen
 	grpcL := m.Match(cmux.HTTP2())
 	// start server
 
@@ -146,7 +171,10 @@ func Run(exitFunc func(code int)) {
 		return srv.Serve(httpL)
 	})
 	g.Go(func() error {
-		return grpcSever.Serve(grpcL)
+		return grpcPrivSever.Serve(grpcL)
+	})
+	g.Go(func() error {
+		return grpcPubSever.Serve(listenerPub)
 	})
 	g.Go(func() error {
 		log.V(1).Info("Start", "addr", cfg.Listen)
@@ -174,9 +202,13 @@ func withReqLogger(handler http.Handler) http.Handler {
 	})
 }
 
-func withGW(gwmux *runtime.ServeMux, handler http.Handler) http.Handler {
+func withGW(gwmux, gwmuxPub *runtime.ServeMux, handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api") {
+			gwmuxPub.ServeHTTP(w, r)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/my/api") {
 			gwmux.ServeHTTP(w, r)
 			return
 		}

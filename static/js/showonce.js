@@ -13,36 +13,105 @@ function pageLoaded() {
   console.log("Lookup meta for ID "+id);
   const req = { id: id };
   AppAPI.PublicService.GetMetadata(req).then(
-  function(value) { /* code if successful */ 
-      console.log("Result "+value);
-      var resp = value; //JSON.parse(xhr.responseText);
+  function(value) { /* code if successful */
+      var resp = value;
       if (resp == undefined) return;
+      console.log("Result: "+JSON.stringify(resp));
       showItem(resp);
   },
-  function(error) { /* code if some error */ 
+  function(error) { /* code if some error */
       div  = document.getElementById("log");
-      div.innerHTML=error; //xhr.status + ': ' + xhr.statusText;
+      div.innerHTML=JSON.stringify(error);
   }
 );
+}
 
-/*
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/api/item?id='+id);
-  xhr.setRequestHeader('Accept', 'application/json');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-    if (xhr.status != 200) {
-      console.log(xhr.status + ': ' + xhr.statusText);
-      div  = document.getElementById("log");
-      div.innerHTML=xhr.status + ': ' + xhr.statusText;
-    } else {
-      var resp = JSON.parse(xhr.responseText);
+function showItemData() {
+  const req = { id: ItemID };
+  AppAPI.PublicService.GetData(req).then(
+  function(value) { /* code if successful */
+      var resp = value.data;
       if (resp == undefined) return;
-      showItem(resp);
-    }
+      console.log("Result: "+JSON.stringify(resp));
+      var text = document.getElementById('item_data');
+      text.value = resp;
+      document.getElementById('data_request').style.display = 'none';
+      document.getElementById('data_response').style.display = 'initial';
+  },
+  function(error) { /* code if some error */
+      if (error.status == 404) { // TODO: check 404
+        document.getElementById('data_request').style.display = 'none';
+        document.getElementById("log").innerText='Данные больше не доступны'
+      }
+      var div  = document.getElementById("log");
+      div.innerHTML=JSON.stringify(error);
   }
-  xhr.send();
-*/
+  );
+}
+
+function sendForm(form, path) {
+  var div  = document.getElementById("log"),
+      xhr  = new XMLHttpRequest(),
+      formData = new FormData(form);
+      div.innerHTML = '';
+      console.dir(formData);
+  var fields = Object.fromEntries(formData);
+  if (fields.title=='' || fields.data=='') {
+    div.innerHTML = 'Title and data must be set';
+    return false;
+  }
+  console.log("Ready to send"+JSON.stringify(fields));
+  AppAPI.PrivateService.NewMessage(fields).then(
+    function(value) { /* code if successful */
+        var resp = value.id;
+        if (resp == undefined) return;
+        console.log("Result "+resp);
+        var a = document.createElement('a');
+        //a.target = '_blank';
+        a.href = '/?id='+resp;
+        a.innerText = resp;
+        div.innerText='Saved. ID: ';
+        div.appendChild(a);
+      },
+    function(error) { /* code if some error */
+        console.log('Error: ' + JSON.stringify(error));
+    }
+    );
+  return false;
+}
+
+function pageMyLoaded() {
+  const req = {};
+  AppAPI.PrivateService.GetStats(req).then(
+  function(value) { /* code if successful */
+      console.log("Result "+value);
+      var resp = value;
+      if (resp == undefined) return;
+      showStatItems(resp);
+  },
+  function(error) { /* code if some error */
+      console.log('Error: ' + JSON.stringify(error));
+      //div  = document.getElementById("log");
+      //div.innerHTML=error; //xhr.status + ': ' + xhr.statusText;
+  }
+  );
+}
+
+function pageListLoaded() {
+  const req = {};
+  AppAPI.PrivateService.GetItems(req).then(
+  function(value) { /* code if successful */
+      console.log("Result "+value);
+      var resp = value.items;
+      if (resp == undefined) return;
+      showItems(resp);
+  },
+  function(error) { /* code if some error */
+      console.log('Error: ' + JSON.stringify(error));
+      //div  = document.getElementById("log");
+      //div.innerHTML=error; //xhr.status + ': ' + xhr.statusText;
+  }
+  );
 }
 
 function showItem(item) {
@@ -62,82 +131,6 @@ function showItem(item) {
   }
 }
 
-function showItemData() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', '/api/item?id='+ItemID);
-  xhr.setRequestHeader('Accept', 'application/json'); // TODO: Accept?
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-    if (xhr.status != 200) {
-      console.log(xhr.status + ': ' + xhr.statusText);
-      if (xhr.status == 404) {
-        document.getElementById('data_request').style.display = 'none';
-        document.getElementById("log").innerText='Данные больше не доступны'
-      }
-    } else {
-      var resp = JSON.parse(xhr.responseText);
-      if (resp == undefined) return;
-      var text = document.getElementById('item_data');
-      text.value = resp;
-      document.getElementById('data_request').style.display = 'none';
-      document.getElementById('data_response').style.display = 'initial';
-    }
-  }
-  xhr.send();
-}
-
-function sendForm(form, path) {
-  var div  = document.getElementById("log"),
-      xhr  = new XMLHttpRequest(),
-      formData = new FormData(form);
-  div.innerHTML = '';
-  console.dir(formData);
-  var fields = Object.fromEntries(formData);
-  if (fields.title=='' || fields.data=='') {
-    div.innerHTML = 'Title and data must be set';
-    return false;
-  }
-  var data= JSON.stringify(fields);
-  data.exp=Number(data.exp);
-  xhr.open('POST', path);
-  xhr.setRequestHeader('Accept', 'application/json');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-    if (xhr.status != 200) {
-      console.log(xhr.status + ': ' + xhr.statusText);
-    } else {
-      var resp = JSON.parse(xhr.responseText);
-      if (resp == undefined) return;
-
-      var a = document.createElement('a');
-      //a.target = '_blank';
-      a.href = '/?id='+resp;
-      a.innerText = resp;
-      div.innerText='Saved. ID: ';
-      div.appendChild(a);
-    }
-  }
-  xhr.send(data);
-  return false;
-}
-
-function pageMyLoaded() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/my/api/stat');
-  xhr.setRequestHeader('Accept', 'application/json');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-    if (xhr.status != 200) {
-      console.log(xhr.status + ': ' + xhr.statusText);
-    } else {
-      var resp = JSON.parse(xhr.responseText);
-      if (resp == undefined) return;
-      showStatItems(resp);
-    }
-  }
-  xhr.send();
-}
-
 function showStatItems(item) {
   var tbodyRef = document.getElementById('stat').getElementsByTagName('tbody')[0];
   for (const [ key, value ] of Object.entries(item) ) {
@@ -148,23 +141,6 @@ function showStatItems(item) {
       addCell(newRow,value[item]);
     });
   }  
-}
-
-function pageListLoaded() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/my/api/items');
-  xhr.setRequestHeader('Accept', 'application/json');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-    if (xhr.status != 200) {
-      console.log(xhr.status + ': ' + xhr.statusText);
-    } else {
-      var resp = JSON.parse(xhr.responseText);
-      if (resp == undefined) return;
-      showItems(resp);
-    }
-  }
-  xhr.send();
 }
 
 function showItems(item) {

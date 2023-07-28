@@ -25,8 +25,6 @@ TARGETOS      ?= linux
 TARGETARCH    ?= amd64
 LDFLAGS       := -s -w -extldflags '-static'
 
-OS            ?= linux
-ARCH          ?= amd64
 ALLARCH       ?= "linux/amd64 linux/386 darwin/amd64 linux/arm linux/arm64"
 DIRDIST       ?= dist
 
@@ -79,6 +77,10 @@ AS_COOKIE_SIGN_KEY   ?= $(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; ech
 AS_COOKIE_CRYPT_KEY  ?= $(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; echo)
 
 # ------------------------------------------------------------------------------
+-include $(CFG).bak
+-include $(CFG)
+export
+
 # Find and include DCAPE/apps/drone/dcape-app/Makefile
 DCAPE_COMPOSE ?= dcape-compose
 DCAPE_ROOT    ?= $(shell docker inspect -f "{{.Config.Labels.dcape_root}}" $(DCAPE_COMPOSE))
@@ -87,9 +89,6 @@ ifeq ($(shell test -e $(DCAPE_ROOT)/Makefile.app && echo -n yes),yes)
   include $(DCAPE_ROOT)/Makefile.app
 endif
 
--include $(CFG).bak
--include $(CFG)
-export
 
 .PHONY: build build-standalone run fmt lint ci-lint vet test cov-html cov-func cov-total cov-clean changelog
 .PHONY: buildall dist clean docker docker-multi use-own-hub godoc ghcr
@@ -200,8 +199,25 @@ static/js/api.js: zgen/ts/proto/service.pb.ts
 	docker run --rm  -v `pwd`:/mnt/pwd -w /mnt/pwd --entrypoint /go/bin/esbuild $(BUF_IMG)  \
 	  zgen/ts/proto/service.pb.ts --bundle --outfile=/mnt/pwd/static/js/api.js --global-name=AppAPI
 
-grpc-test:
-	docker run fullstorydev/grpcurl -plaintext localhost$(LISTEN) list
+# ------------------------------------------------------------------------------
+# GRPC testing
+
+
+GRPC_HOST ?= grpc.showonce.dev.test:443
+
+grpc-test-list:
+	docker run --rm -v /etc/ssl/certs:/etc/ssl/certs -t fullstorydev/grpcurl $(GRPC_HOST) list
+
+grpc-test-desc:
+	docker run --rm -v /etc/ssl/certs:/etc/ssl/certs -t fullstorydev/grpcurl \
+	 $(GRPC_HOST) describe api.showonce.v1.PublicService
+
+ID ?= 01H6DWS3VFV0YXEG0B25BSQ0R9
+
+grpc-test-data:
+	docker run --rm -v /etc/ssl/certs:/etc/ssl/certs -t fullstorydev/grpcurl \
+	  -d '{"id": "$(ID)"}'  \
+	  $(GRPC_HOST) api.showonce.v1.PublicService.GetMetadata
 
 # ------------------------------------------------------------------------------
 ## Prepare distros
