@@ -1,5 +1,9 @@
 name: GoTest
 
+on:
+  push:
+    branches: [ master, v* ]
+
 jobs:
   test:
     runs-on: ubuntu-latest
