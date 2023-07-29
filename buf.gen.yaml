@@ -1,0 +1,66 @@
+version: v1
+plugins:
+  # ##############################################################################
+  #  protoc-gen-go
+  #  https://pkg.go.dev/google.golang.org/protobuf/cmd/protoc-gen-go
+  # #############################################################################
+  - name: go
+    out: zgen/go
+    opt:
+      - paths=source_relative
+  # ##############################################################################
+  #  protoc-gen-go-grpc
+  #  https://pkg.go.dev/google.golang.org/grpc/cmd/protoc-gen-go-grpc#section-readme
+  # #############################################################################
+  - name: go-grpc
+    out: zgen/go
+    opt:
+      - paths=source_relative
+  ##############################################################################
+  #  protoc-gen-validate (PGV)
+  #  https://github.com/envoyproxy/protoc-gen-validate
+  # #############################################################################
+  - name: validate
+    out: zgen/go
+    opt:
+      - lang=go
+      - paths=source_relative
+  # ##############################################################################
+  #  gRPC-Gateway grpc-gateway & openapi
+  #  https://github.com/grpc-ecosystem/grpc-gateway
+  #  https://buf.build/grpc-ecosystem/plugins/openapiv2
+  #  https://buf.build/grpc-ecosystem/plugins/grpc-gateway
+  # #############################################################################
+  - name: grpc-gateway
+    out: zgen/go
+    opt:
+      - paths=source_relative
+  - name: openapiv2
+    out: static/js
+    opt:
+      - output_format=json
+      - allow_merge=true
+      - merge_file_name=service
+      - openapi_configuration=proto/config.swagger.yaml
+    strategy: all
+  # ##############################################################################
+  #  protoc-gen-doc
+  #  https://github.com/pseudomuto/protoc-gen-doc
+  # #############################################################################
+  - name: doc
+    out: proto/
+    opt: template.tmpl,README.md
+    strategy: all
+  # ##############################################################################
+  #  protoc-gen-grpc-gateway-ts
+  #  https://github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts
+  # #############################################################################
+  - name: grpc-gateway-ts
+    out: zgen/ts
+    strategy: all
+    opt:
+      - ts_import_roots=.
+#      - ts_import_root_aliases=/js
+      - fetch_module_directory=.
+      - logtostderr=true
+      - loglevel=debug

@@ -1,0 +1,341 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Service api",
+    "version": "1.0",
+    "contact": {
+      "name": "Showonce project",
+      "url": "https://github.com/LeKovr/showonce"
+    },
+    "license": {
+      "name": "MIT License",
+      "url": "https://github.com/LeKovr/showonce/blob/master/LICENSE.md"
+    }
+  },
+  "tags": [
+    {
+      "name": "PublicService"
+    },
+    {
+      "name": "PrivateService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/item": {
+      "get": {
+        "summary": "вернуть метаданные по id",
+        "operationId": "PublicService_GetMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ItemMeta"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PublicService"
+        ]
+      }
+    },
+    "/api/item/{id}": {
+      "post": {
+        "summary": "вернуть контент по id",
+        "operationId": "PublicService_GetData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ItemData"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PublicService"
+        ]
+      }
+    },
+    "/my/api/items": {
+      "get": {
+        "summary": "вернуть список своих текстов",
+        "operationId": "PrivateService_GetItems",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ItemList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "PrivateService"
+        ]
+      }
+    },
+    "/my/api/new": {
+      "post": {
+        "summary": "создать контент",
+        "operationId": "PrivateService_NewMessage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ItemId"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1NewItemRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PrivateService"
+        ],
+        "security": [
+          {
+            "OAuth2": [
+              "read",
+              "write"
+            ]
+          }
+        ]
+      }
+    },
+    "/my/api/stat": {
+      "get": {
+        "summary": "общая статистика (всего/активных текстов, макс дата активного текста)",
+        "operationId": "PrivateService_GetStats",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1StatsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "PrivateService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1ItemData": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ItemId": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "title": "Item ULID"
+    },
+    "v1ItemList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ItemMetaWithId"
+          }
+        }
+      }
+    },
+    "v1ItemMeta": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "group": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1ItemStatus"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "modifiedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ItemMetaWithId": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "meta": {
+          "$ref": "#/definitions/v1ItemMeta"
+        }
+      }
+    },
+    "v1ItemStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "WAIT",
+        "READ",
+        "EXPIRED",
+        "CLEARED"
+      ],
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: A Standard tournament\n - WAIT: Item was not read\n - READ: Item was read\n - EXPIRED: Item was expired\n - CLEARED: Item was cleared"
+    },
+    "v1NewItemRequest": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "group": {
+          "type": "string"
+        },
+        "expire": {
+          "type": "string"
+        },
+        "expireUnit": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string"
+        }
+      }
+    },
+    "v1Stats": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "wait": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "read": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "expired": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1StatsResponse": {
+      "type": "object",
+      "properties": {
+        "my": {
+          "$ref": "#/definitions/v1Stats"
+        },
+        "other": {
+          "$ref": "#/definitions/v1Stats"
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "More about apisite",
+    "url": "https://lekovr.github.io"
+  }
+}

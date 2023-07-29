@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package api.showonce.v1;
+
+option java_package = "com.showonce.v1";
+option java_multiple_files = true;
+option java_outer_classname = "ShowOnceProto";
+
+option go_package = "github.com/LeKovr/showonce/proto;showonce";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+service PublicService {
+  // вернуть метаданные по id
+  rpc GetMetadata(ItemId) returns (ItemMeta) {
+    option (google.api.http) = {
+      get: "/api/item"
+    };
+  }
+  // вернуть контент по id
+  rpc GetData(ItemId) returns (ItemData) {
+    option (google.api.http) = {
+      post: "/api/item/{id}"
+    };
+  }
+}
+
+// Private
+service PrivateService {
+  // создать контент
+  rpc NewMessage(NewItemRequest) returns (ItemId){
+    option (google.api.http) = {
+      post: "/my/api/new"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "OAuth2";
+                    value: {
+                        scope: "read";
+                        scope: "write";
+                    }
+                }
+            }
+    };
+  }
+  // вернуть список своих текстов
+  rpc GetItems(google.protobuf.Empty) returns (ItemList) {
+    option (google.api.http) = {
+      get: "/my/api/items"
+    };
+  }
+
+  // общая статистика (всего/активных текстов, макс дата активного текста)
+  rpc GetStats(google.protobuf.Empty) returns (StatsResponse) {
+    option (google.api.http) = {
+      get: "/my/api/stat"
+    };
+  }
+
+}
+
+enum ItemStatus {
+	// A Standard tournament
+	UNKNOWN = 0;
+	// Item was not read
+	WAIT = 1;
+	// Item was read
+	READ = 2;
+	// Item was expired
+	EXPIRED = 3;
+	// Item was cleared
+	CLEARED = 4;
+  }
+  
+// Item ULID
+message ItemId { string id = 1; }
+
+message NewItemRequest {
+	string title = 1;
+	string group = 2;
+	string expire = 3;
+	string expire_unit = 4;
+	string data = 5;
+}
+
+message ItemData {
+	string data = 1;
+}
+
+message ItemMeta {
+	string title = 1;
+	string group = 2;
+	string owner = 3;
+	ItemStatus status = 4;
+	google.protobuf.Timestamp created_at = 5;
+	google.protobuf.Timestamp modified_at = 6; // >now() means Expire (and Status=1)
+}
+
+message ItemMetaWithId {
+	string id =1;
+	ItemMeta meta = 2;
+}
+
+message ItemList {
+	repeated ItemMetaWithId items = 1;
+}
+
+message Stats {
+	int32 total=1;
+	int32 wait=2;
+	int32 read=3;
+	int32 expired=4;
+}
+
+message StatsResponse {
+	Stats my =1;
+	Stats other =2;
+}
+

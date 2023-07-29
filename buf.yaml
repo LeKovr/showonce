@@ -1,0 +1,10 @@
+version: v1
+deps:
+  - buf.build/googleapis/googleapis
+  - buf.build/grpc-ecosystem/grpc-gateway
+  - buf.build/envoyproxy/protoc-gen-validate
+# "google/api/annotations.proto";
+# "google/protobuf/field_mask.proto";
+# "google/protobuf/struct.proto";
+
+#go install google.golang.org/protobuf/cmd/protoc-gen-go@latest

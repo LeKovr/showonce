@@ -5,11 +5,11 @@
 
 package main
 
-import "os"
-
-// Actual main.version value will be set at build time
-var version = "0.0-dev"
+import (
+	"context"
+	"os"
+)
 
 func main() {
-	Run(version, os.Exit)
+	Run(context.Background(), os.Exit)
 }

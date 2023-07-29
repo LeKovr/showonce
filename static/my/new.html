@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel='shortcut icon' type='image/x-icon' href='/favicon.ico' />
     <script src="/js/api.js"></script>
-    <link rel="stylesheet" type="text/css" href="/api.css">
+    <script src="/js/showonce.js"></script>
+    <link rel="stylesheet" type="text/css" href="/showonce.css">
     <title>ShowOnce - New secret</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -24,7 +25,8 @@
 </div>
 <div class="bottom">
   <div class="right">
-    Powered by <a href="https://it.elfire.ru/itc/showonce">showonce</a> v0.2.0
+    Powered by <a href="https://github.com/LeKovr/showonce">showonce</a> v1.0
+    | <a href="/openapi.html">API</a>
   </div>
 </div>
 <div class="content">
@@ -34,8 +36,8 @@
     <table class="wide">
       <tr><td>Title</td><td><input type="text" name="title" size="40" required placeholder="Secret description" /></td></tr>
       <tr><td>Group</td><td><input type="text" name="group" size="10" value="default"  /></td></tr>
-      <tr><td>Expire</td><td><input type="number" name="exp" min="1" max="9999" value="7" />
-        <select name="exp_unit">
+      <tr><td>Expire</td><td><input type="number" name="expire" min="1" max="9999" value="7" />
+        <select name="expire_unit">
             <option value="d">day(s)</option>
             <option value="h">hour(s)</option>
             <option value="m">min</option>

@@ -1,3 +1,4 @@
+// Package static содержит статические страницы встроенного сайта.
 package static
 
 import (
@@ -10,23 +11,16 @@ import (
 //go:embed *
 var embedFS embed.FS
 
-const embedRoot = "" //static"
-
-func New(root string) (hfs http.FileSystem, err error) {
+// New возвращает втроенную ФС (если root =="") или заданную (иначе).
+func New(root string) (http.FileSystem, error) {
 	var serverRoot fs.FS
 	if root != "" {
 		// take real filesystem
 		serverRoot = os.DirFS(root)
-	} else if embedRoot != "" {
-		// take embedded subdir
-		serverRoot, err = fs.Sub(embedFS, embedRoot)
 	} else {
 		// take embedded fs
 		serverRoot = embedFS
 	}
-	if err != nil {
-		return
-	}
-	hfs = http.FS(serverRoot)
-	return
+	hfs := http.FS(serverRoot)
+	return hfs, nil
 }

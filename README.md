@@ -1,7 +1,23 @@
----
-gitea: none
-include_toc: true
----
+
+[![Go Reference][ref1]][ref2]
+ [![GitHub Release][gr1]][gr2]
+ [![codecov][cc1]][cc2]
+ [![GoCard][gc1]][gc2]
+ [![Build Status][bs1]][bs2]
+ [![GitHub license][gl1]][gl2]
+
+[ref1]: https://pkg.go.dev/badge/github.com/LeKovr/showonce.svg
+[ref2]: https://pkg.go.dev/github.com/LeKovr/showonce
+[cc1]: https://github.com/LeKovr/showonce/wiki/coverage.svg
+[cc2]: https://raw.githack.com/wiki/LeKovr/showonce/coverage.html
+[gc1]: https://goreportcard.com/badge/github.com/LeKovr/showonce
+[gc2]: https://goreportcard.com/report/github.com/LeKovr/showonce
+[bs1]: https://github.com/LeKovr/showonce/actions/workflows/docker-publish.yml/badge.svg
+[bs2]: http://github.com/LeKovr/showonce/actions/workflows/docker-publish.yml
+[gr1]: https://img.shields.io/github/release/LeKovr/showonce.svg
+[gr2]: https://github.com/LeKovr/showonce/releases
+[gl1]: https://img.shields.io/github/license/LeKovr/showonce.svg
+[gl2]: https://github.com/LeKovr/showonce/blob/master/LICENSE
 
 # Шованс (Show once)
 
@@ -9,12 +25,60 @@ include_toc: true
 
 ## Назначение
 
-Предоставить **Отправителю** возможность сохранить на сервере некую текстовую информацию (например, пароль) и ограничить доступ к ней единственным **адресатом**.
-Цель - гарантировать, что легитимный **адресат** или будет единственным или вообще не получит доступ к информации (что будет означать утечку).
+* Предоставить **Отправителю** возможность сохранить на сервере некий текстовый **секрет** (например, пароль) с некоторым случайным **идентификатором** и периодом актуальности
+* Предоставить **Получателю** возможность однократно прочитать этот секрет при выполнении условий:
+  * Передан идентификатор
+  * Период актуальности еще не закончился
+  * Запрос на доступ предоставляется впервые 
 
-При этом на **адресата** не должно накладываться требований по безопасности (вроде наличия ЭЦП или токена), кроме визуального контроля атрибутов сертификата сервиса.
+В первой версии считается допустимым сценарий, при котором **Получатель** может получить фальшивый URL, пройти по ссылке и увидеть похожий сайт, который запросит информацию с легального, покажет ее пользователю и продублирует у себя в интересах третьих лиц.
 
-Т.о., в первой версии считается допустимым сценарий, при котором пользователь может получить фальшивый URL, пройти по ссылке и увидеть похожий сайт, который запросит информацию с легального, покажет ее пользователю и сохранит у себя.
+## Диаграмма потока запросов
+
+```mermaid
+flowchart TD
+  subgraph web[Internet]
+    subgraph br[Browser]
+      page[Static page]
+      js[/Javascript API / Swagger/]
+    end
+    grpcc[/GRPC-client/]
+  end
+  subgraph srv[Server]
+    subgraph tr[Traefik+LE]
+      br-- https -->httpf[HTTPS Front]
+      grpcc-- GRPC -->grpcf[GRPC Front]
+    end
+    subgraph so[Showonce]
+      httpf-- http -->http[Showonce HTTP FE]
+      grpcf-- h2c -->pub>Showonce GRPC Public service]
+      http-- public_page_req -->static[Static FS]
+      http-- public_api_req -->gw_pub[/Public API GRPC Gateway/]
+      http-- private_req -->oauth[[Oauth2]]
+      oauth-- page_req -->static
+      oauth-- api_req -->gw_priv[/Private API GRPC Gateway/]
+      gw_pub-- GRPC -->pub
+      gw_priv-- GRPC -->priv>Showonce GRPC Private service]
+      pub ==> st[(Showonce Storage)]
+      priv ==> st
+    end
+  end
+  classDef out stroke:#f00
+  classDef our stroke:#0f0
+  classDef ext stroke:#00f
+  class web out;
+  class tr ext;
+  class so our;
+```
+<div style="width: 30%">
+
+```mermaid
+flowchart TD
+  a[/Generated fom .proto/]
+  b>Showonce API]
+  c[(Cache)]
+```
+</div>
 
 ## Атрибуты текста
 
@@ -36,7 +100,7 @@ include_toc: true
 * нажимает "Сохранить"
 * получает ссылку на доступ к информации
 
-**Адресат**
+**Получатель**
 
 * открывает ссылку доступа
 * видит название текста, срок жизни и ссылку "Показать"
@@ -80,11 +144,9 @@ include_toc: true
 
 ### API
 
-* /api/item?id=XXX (GET) - вернуть метаданные по id
-* /api/item?id=XXX (POST) - вернуть контент по id
-* /my/api/items - вернуть список своих текстов
-* /my/api/new - создать контент
-* /my/api/stat - общая статистика (всего/активных текстов, макс дата активного текста)
+Для публичной части поддерживается интерфейс GRPC. Также доступен [JSON RPC](static/js/service.swagger.json)
+
+См также: [Описание .proto](proto/)
 
 ### ID
 
@@ -109,7 +171,7 @@ include_toc: true
 
 Вместе с тем, жизненный цикл у метаданных текста иной, информация о его судьбе должна храниться дольше (до Срока жизни метаданных), поэтому (в след версиях) метаданные будут храниться в персистентном хранилище.
 
-Первичное решение: in-memory KV [go-cache](https://github.com/patrickmn/go-cache).
+Текущее решение: in-memory KV [zcache](https://zgo.at/zcache/v2).
 
 ### Авторизация отправителя
 
@@ -134,7 +196,15 @@ include_toc: true
 
 ## История изменений
 
+* v1.0.0, 29.07.2023? - рефакторинг с изменением архитектуры на GRPC
 * v0.2.0, 9.12.2022 - незначительный рефакторинг, предварительна доработка стилей, переезд на dopos/narra
 * v0.1.1, 7.07.2022 - релиз, доработан ввод срока жизни, добавлен деплой в dcape
 * v0.0.2, 6.07.2022 - MVP, начало тестирования
 * v0.0.1, 29.06.2022 - начало работ, предварительный вариант ТЗ
+
+## Лицензия
+
+Copyright 2023 Aleksei Kovrizhkin <lekovr+github@gmail.com>
+
+Исходный код проекта лицензирован под Apache License, Version 2.0 (the "[License](LICENSE)");
+
