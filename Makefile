@@ -57,6 +57,9 @@ IMAGE_VER     ?= latest
 #- Docker container addr:port
 LISTEN        ?= :8080
 
+#- Public GRPC service addr:port
+LISTEN_GRPC   ?= :8081
+
 # app url prefix
 APP_PROTO     ?= http
 
@@ -113,15 +116,20 @@ build-standalone: $(PRG_DEST)
 
 ## Build & run app
 run: $(PRG)
-	./$(PRG) --log.debug --root=static --listen $(LISTEN)
+	./$(PRG) --log.debug --root=static --listen $(LISTEN) --listen_grpc $(LISTEN_GRPC)
 
 ## Format go sources
 fmt:
 	$(GO) fmt ./...
 
+## Check and sort imports
+fmt-gci:
+	@which gci > /dev/null || $(GO) install github.com/daixiang0/gci@latest
+	@gci write . --skip-generated -s standard -s default
+
 ## Run lint
 lint:
-	@which golint > /dev/null || go install golang.org/x/lint/golint@latest
+	@which golint > /dev/null || $(GO) install golang.org/x/lint/golint@latest
 	@golint ./...
 
 ## Run golangci-lint
