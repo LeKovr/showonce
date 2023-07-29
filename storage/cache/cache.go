@@ -1,3 +1,4 @@
+// Package cache implements cache storage.
 package cache
 
 import (
@@ -35,7 +36,7 @@ var (
 	ErrDataCorrupted = errors.New("item data was corrupted")
 )
 
-// NewStorage returns new Storage object.
+// New returns new Storage object.
 func New(cfg Config) Storage {
 	return Storage{
 		Meta: zcache.New[string, *gen.ItemMeta](cfg.MetaTTL, cfg.CleanupInterval),

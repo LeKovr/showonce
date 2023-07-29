@@ -20,11 +20,11 @@ var errMissingMetadata = status.Errorf(codes.InvalidArgument, "no incoming metad
 // PublicServiceImpl - реализация PublicService.
 type PublicServiceImpl struct {
 	gen.UnimplementedPublicServiceServer
-	Store storage.StorageIface
+	Store storage.Iface
 }
 
 // NewPublicService - создать PublicService.
-func NewPublicService(db storage.StorageIface) *PublicServiceImpl {
+func NewPublicService(db storage.Iface) *PublicServiceImpl {
 	return &PublicServiceImpl{Store: db}
 }
 
@@ -43,11 +43,11 @@ func (service PublicServiceImpl) GetData(_ context.Context, id *gen.ItemId) (*ge
 // PrivateServiceImpl - реадизация PrivateService.
 type PrivateServiceImpl struct {
 	gen.UnimplementedPrivateServiceServer
-	Store storage.StorageIface
+	Store storage.Iface
 }
 
 // NewPrivateService - создать PrivateService.
-func NewPrivateService(db storage.StorageIface) *PrivateServiceImpl {
+func NewPrivateService(db storage.Iface) *PrivateServiceImpl {
 	return &PrivateServiceImpl{Store: db}
 }
 

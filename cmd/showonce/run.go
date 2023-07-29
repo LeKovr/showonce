@@ -143,13 +143,14 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	// creating a listener for server
+	// creating a listener for GRPC server
 	var listenerPub net.Listener
 	listenerPub, err = net.Listen("tcp", cfg.ListenGRPC)
 	if err != nil {
 		return
 	}
-	// creating a listener for server
+
+	// creating a listener for HTTP server
 	var listener net.Listener
 	listener, err = net.Listen("tcp", cfg.Listen)
 	if err != nil {
