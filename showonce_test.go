@@ -20,7 +20,7 @@ func TestRPC(t *testing.T) {
 	ctx := context.Background()
 	pub := app.NewPublicService(db)
 	priv := app.NewPrivateService(db)
-	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs("auth", user))
+	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs("user", user))
 	id, err := priv.NewMessage(ctxMD, item)
 	assert.NoError(t, err, "SetMeta")
 	assert.NotNil(t, id, "SetMetaNotNil")
