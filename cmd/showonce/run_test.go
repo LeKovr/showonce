@@ -17,7 +17,7 @@ import (
 func TestRunErrors(t *testing.T) {
 	// Save original args
 	a := os.Args
-	_, p2 := GetPorts(t)
+	ports := GetPorts(t)
 
 	tests := []struct {
 		name string
@@ -26,9 +26,10 @@ func TestRunErrors(t *testing.T) {
 	}{
 		{"Help", config.ExitHelp, []string{"-h"}},
 		{"UnknownFlag", config.ExitBadArgs, []string{"-0"}},
-		{"IncorrectEndPoint", config.ExitError, []string{"--log.debug",
+		{"IncorrectEndPoint", config.ExitError, []string{
+			"--log.debug",
 			"--listen", "xx:unknown",
-			"--listen_grpc", fmt.Sprintf(":%d", p2),
+			"--listen_grpc", fmt.Sprintf(":%d", ports[0]),
 		}},
 	}
 	ctx := context.Background()
@@ -46,12 +47,12 @@ func TestRunErrors(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	p1, p2 := GetPorts(t)
+	ports := GetPorts(t)
 	// Save original args
 	a := os.Args
 	os.Args = append([]string{a[0]},
-		"--listen", fmt.Sprintf(":%d", p1),
-		"--listen_grpc", fmt.Sprintf(":%d", p2),
+		"--listen", fmt.Sprintf(":%d", ports[0]),
+		"--listen_grpc", fmt.Sprintf(":%d", ports[1]),
 	)
 	var c int
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
@@ -62,14 +63,28 @@ func TestRun(t *testing.T) {
 	os.Args = a
 }
 
-func GetPorts(t *testing.T) (int, int) {
+func GetPorts(t *testing.T) []int {
+	t.Helper()
 	// Find ports
 	p1, err := GetFreePort()
 	assert.NoError(t, err, "Port")
 	p2, err := GetFreePort()
 	assert.NoError(t, err, "Port2")
-	return p1, p2
+	return []int{p1, p2}
 }
+
+/*
+func GetPorts(t *testing.T) (p1, p2 int) {
+	// Find ports
+	var err error
+	p1, err = GetFreePort()
+	assert.NoError(t, err, "Port")
+	p2, err = GetFreePort()
+	assert.NoError(t, err, "Port2")
+	return // p1, p2
+}
+
+*/
 
 // Code from https://gist.github.com/sevkin/96bdae9274465b2d09191384f86ef39d
 
@@ -80,9 +95,11 @@ func GetFreePort() (int, error) {
 	if a, err = net.ResolveTCPAddr("tcp", "localhost:0"); err == nil {
 		var l *net.TCPListener
 		if l, err = net.ListenTCP("tcp", a); err == nil {
-			port := l.Addr().(*net.TCPAddr).Port
-			l.Close()
-			return port, err
+			if port, ok := l.Addr().(*net.TCPAddr); ok {
+				err = l.Close()
+				return port.Port, err
+			}
+			err = l.Close()
 		}
 	}
 	return 0, err
