@@ -261,6 +261,7 @@ clean:
 	  done
 	@[ -d $(DIRDIST) ] && rm -rf $(DIRDIST) || true
 	@[ -f $(PRG) ] && rm -f $(PRG) || true
+	@rm -f $(PRG)-* || true
 	@[ ! -f coverage.out ] || rm coverage.out
 
 # ------------------------------------------------------------------------------
@@ -271,7 +272,7 @@ clean:
 docker: $(PRG)
 	docker build -t $(PRG) .
 
-ALLARCH_DOCKER ?= "linux/arm/v7,linux/arm64"
+ALLARCH_DOCKER ?= "linux/amd64,linux/arm/v7,linux/arm64"
 
 # build multiarch docker images via buildx
 docker-multi:

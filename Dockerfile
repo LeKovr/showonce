@@ -20,8 +20,8 @@ ARG APP
 
 LABEL org.opencontainers.image.title="$APP" \
       org.opencontainers.image.description="ShowOnce. One-time secrets service" \
-      org.opencontainers.image.authors="lekovr+dopos@gmail.com" \
-      org.opencontainers.image.licenses="MIT"
+      org.opencontainers.image.authors="lekovr+github@gmail.com" \
+      org.opencontainers.image.licenses="Apache v2"
 
 WORKDIR /
 

@@ -3,3 +3,4 @@ showonce
 !cmd/showonce
 coverage.out
 buf.lock
+dist/
