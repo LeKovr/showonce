@@ -201,3 +201,10 @@ flowchart TD
 * v0.1.1, 7.07.2022 - релиз, доработан ввод срока жизни, добавлен деплой в dcape
 * v0.0.2, 6.07.2022 - MVP, начало тестирования
 * v0.0.1, 29.06.2022 - начало работ, предварительный вариант ТЗ
+
+## Лицензия
+
+Copyright 2023 Aleksei Kovrizhkin <lekovr+github@gmail.com>
+
+Исходный код проекта лицензирован под Apache License, Version 2.0 (the "[License](LICENSE)");
+
