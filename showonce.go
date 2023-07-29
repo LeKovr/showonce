@@ -6,6 +6,7 @@ package showonce
 import (
 	"context"
 
+	"github.com/LeKovr/showonce/storage"
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
 	"github.com/go-logr/logr"
 	"google.golang.org/grpc/codes"
@@ -19,11 +20,11 @@ var errMissingMetadata = status.Errorf(codes.InvalidArgument, "no incoming metad
 // PublicServiceImpl - реализация PublicService.
 type PublicServiceImpl struct {
 	gen.UnimplementedPublicServiceServer
-	Store Storage
+	Store storage.StorageIface
 }
 
 // NewPublicService - создать PublicService.
-func NewPublicService(db Storage) *PublicServiceImpl {
+func NewPublicService(db storage.StorageIface) *PublicServiceImpl {
 	return &PublicServiceImpl{Store: db}
 }
 
@@ -42,11 +43,11 @@ func (service PublicServiceImpl) GetData(_ context.Context, id *gen.ItemId) (*ge
 // PrivateServiceImpl - реадизация PrivateService.
 type PrivateServiceImpl struct {
 	gen.UnimplementedPrivateServiceServer
-	Store Storage
+	Store storage.StorageIface
 }
 
 // NewPrivateService - создать PrivateService.
-func NewPrivateService(db Storage) *PrivateServiceImpl {
+func NewPrivateService(db storage.StorageIface) *PrivateServiceImpl {
 	return &PrivateServiceImpl{Store: db}
 }
 

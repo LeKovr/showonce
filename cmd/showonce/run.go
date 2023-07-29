@@ -21,7 +21,9 @@ import (
 
 	// importing implementation.
 	app "github.com/LeKovr/showonce"
+	// importing storage implementation.
 	"github.com/LeKovr/showonce/static"
+	storage "github.com/LeKovr/showonce/storage/cache"
 
 	// importing generated stubs.
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
@@ -45,9 +47,9 @@ type Config struct {
 	PrivPrefix  string        `long:"priv" default:"/my/" description:"URI prefix for pages which requires auth"`
 	GracePeriod time.Duration `long:"grace" default:"10s" description:"Stop grace period"`
 
-	Logger     logger.Config     `group:"Logging Options" namespace:"log" env-namespace:"LOG"`
-	AuthServer narra.Config      `group:"Auth Service Options" namespace:"as" env-namespace:"AS"`
-	Storage    app.StorageConfig `group:"Storage Options" namespace:"db" env-namespace:"DB"`
+	Logger     logger.Config  `group:"Logging Options" namespace:"log" env-namespace:"LOG"`
+	AuthServer narra.Config   `group:"Auth Service Options" namespace:"as" env-namespace:"AS"`
+	Storage    storage.Config `group:"Storage Options" namespace:"db" env-namespace:"DB"`
 }
 
 const (
@@ -69,7 +71,7 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	log := logger.New(cfg.Logger, nil)
 	log.Info(application, "version", version)
 	ctx = logr.NewContext(ctx, log)
-	db := app.NewStorage(cfg.Storage)
+	db := storage.New(cfg.Storage)
 
 	Interceptor := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		// Inject logger.
@@ -119,7 +121,6 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
-	ctx = logger.NewContext(ctx, log)
 
 	err = gen.RegisterPublicServiceHandlerFromEndpoint(ctx, muxPub, cfg.ListenGRPC, dialOpts)
 	if err != nil {
@@ -160,10 +161,9 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	httpL := m.Match(cmux.HTTP1Fast())
 
 	// a different listener for HTTP2 since gRPC uses HTTP2
-	// do not listen GRPC at cfg.Listen
 	grpcL := m.Match(cmux.HTTP2())
-	// start server
 
+	// start servers
 	g, gCtx := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		return srv.Serve(httpL)
@@ -172,10 +172,11 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 		return grpcPrivServer.Serve(grpcL)
 	})
 	g.Go(func() error {
+		log.V(1).Info("Start GRPC service", "addr", cfg.ListenGRPC)
 		return grpcPubServer.Serve(listenerPub)
 	})
 	g.Go(func() error {
-		log.V(1).Info("Start", "addr", cfg.Listen)
+		log.V(1).Info("Start HTTP service", "addr", cfg.Listen)
 		return m.Serve()
 	})
 	g.Go(func() error {

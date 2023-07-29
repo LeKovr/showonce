@@ -1,4 +1,4 @@
-package showonce
+package cache
 
 import (
 	crand "crypto/rand"
@@ -10,11 +10,11 @@ import (
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
 	"github.com/oklog/ulid/v2"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	cache "zgo.at/zcache/v2"
+	zcache "zgo.at/zcache/v2"
 )
 
-// StorageConfig holds Storage Config.
-type StorageConfig struct {
+// Config holds Storage Config.
+type Config struct {
 	MetaTTL         time.Duration `long:"meta_ttl" default:"240h" description:"Metadata TTL"`
 	DataTTL         time.Duration `long:"data_ttl" default:"24h" description:"Data TTL"`
 	CleanupInterval time.Duration `long:"cleanup" default:"10m" description:"Cleanup interval"`
@@ -22,8 +22,8 @@ type StorageConfig struct {
 
 // Storage implements data storage.
 type Storage struct {
-	Meta *cache.Cache[string, *gen.ItemMeta]
-	Data *cache.Cache[string, string]
+	Meta *zcache.Cache[string, *gen.ItemMeta]
+	Data *zcache.Cache[string, string]
 }
 
 var (
@@ -36,10 +36,10 @@ var (
 )
 
 // NewStorage returns new Storage object.
-func NewStorage(cfg StorageConfig) Storage {
+func New(cfg Config) Storage {
 	return Storage{
-		Meta: cache.New[string, *gen.ItemMeta](cfg.MetaTTL, cfg.CleanupInterval),
-		Data: cache.New[string, string](cfg.DataTTL, cfg.CleanupInterval),
+		Meta: zcache.New[string, *gen.ItemMeta](cfg.MetaTTL, cfg.CleanupInterval),
+		Data: zcache.New[string, string](cfg.DataTTL, cfg.CleanupInterval),
 	}
 	// TODO: Data. OnEvicted - update Meta.Status
 }

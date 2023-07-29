@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	app "github.com/LeKovr/showonce"
+	storage "github.com/LeKovr/showonce/storage/cache"
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
@@ -12,8 +13,8 @@ import (
 )
 
 func TestRPC(t *testing.T) {
-	cfg := app.StorageConfig{}
-	db := app.NewStorage(cfg)
+	cfg := storage.Config{}
+	db := storage.New(cfg)
 
 	item := &gen.NewItemRequest{
 		Title:      "title",
@@ -51,7 +52,7 @@ func TestRPC(t *testing.T) {
 	assert.Equal(t, item.Data, data.Data, "GetDataEq")
 
 	_, err = pub.GetData(ctx, id)
-	assert.ErrorIs(t, err, app.ErrNotFound, "GetData2")
+	assert.ErrorIs(t, err, storage.ErrNotFound, "GetData2")
 
 	/*
 	   sleep > dataTTL => no data
