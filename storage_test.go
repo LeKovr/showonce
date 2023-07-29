@@ -12,7 +12,13 @@ func TestFlow(t *testing.T) {
 	cfg := app.StorageConfig{}
 	db := app.NewStorage(cfg)
 
-	item := &gen.NewItemRequest{Title: "title", Group: "group", Data: "data"}
+	item := &gen.NewItemRequest{
+		Title:      "title",
+		Group:      "group",
+		Data:       "data",
+		Expire:     "1",
+		ExpireUnit: "d",
+	}
 	user := "test"
 
 	id, err := db.SetMeta(user, item)
@@ -24,9 +30,17 @@ func TestFlow(t *testing.T) {
 	assert.Equal(t, item.Group, meta.Group, "GetMetaEq")
 	assert.Equal(t, user, meta.Owner, "GetMetaOwnerEq")
 
+	stats, err := db.Stats(user)
+	assert.NoError(t, err, "Stats")
+	assert.Equal(t, int32(1), stats.My.Total, "My Items Total must be 1")
+
+	items, err := db.Items(user)
+	assert.NoError(t, err, "Items")
+	assert.Equal(t, gen.ItemStatus_WAIT, items.Items[0].Meta.Status, "ItemsStatusIsWait")
+
 	data, err := db.GetData(id.String())
 	assert.NoError(t, err, "GetData")
-	assert.Equal(t, item.Data, data.Data, "GetDataEq")
+	assert.Equal(t, data.Data, item.Data, "GetDataEq")
 
 	_, err = db.GetData(id.String())
 	assert.ErrorIs(t, err, app.ErrNotFound, "GetData2")

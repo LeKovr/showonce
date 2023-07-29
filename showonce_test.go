@@ -8,14 +8,23 @@ import (
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestRPC(t *testing.T) {
 	cfg := app.StorageConfig{}
 	db := app.NewStorage(cfg)
 
-	item := &gen.NewItemRequest{Title: "title", Group: "group", Data: "data"}
+	item := &gen.NewItemRequest{
+		Title:      "title",
+		Group:      "group",
+		Data:       "data",
+		Expire:     "1",
+		ExpireUnit: "d",
+	}
+
 	user := "test"
+	empty := &emptypb.Empty{}
 	ctx := context.Background()
 	pub := app.NewPublicService(db)
 	priv := app.NewPrivateService(db)
@@ -28,6 +37,14 @@ func TestRPC(t *testing.T) {
 	assert.NoError(t, err, "GetMeta")
 	assert.Equal(t, item.Group, meta.Group, "GetMetaEq")
 	assert.Equal(t, user, meta.Owner, "GetMetaOwnerEq")
+
+	stats, err := priv.GetStats(ctxMD, empty)
+	assert.NoError(t, err, "GetStats")
+	assert.Equal(t, int32(1), stats.My.Total, "My Items Total must be 1")
+
+	items, err := priv.GetItems(ctxMD, empty)
+	assert.NoError(t, err, "GetItems")
+	assert.Equal(t, gen.ItemStatus_WAIT, items.Items[0].Meta.Status, "ItemsStatusIsWait")
 
 	data, err := pub.GetData(ctx, id)
 	assert.NoError(t, err, "GetData")
