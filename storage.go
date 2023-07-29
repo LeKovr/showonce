@@ -14,12 +14,14 @@ import (
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
 )
 
+// StorageConfig holds Storage Config
 type StorageConfig struct {
 	MetaTTL         time.Duration `long:"meta_ttl" default:"240h" description:"Metadata TTL"`
 	DataTTL         time.Duration `long:"data_ttl" default:"24h" description:"Data TTL"`
 	CleanupInterval time.Duration `long:"cleanup" default:"10m" description:"Cleanup interval"`
 }
 
+// Storage implements data storage
 type Storage struct {
 	Meta *cache.Cache[string, *gen.ItemMeta]
 	//Owner *cache.Cache
@@ -27,11 +29,15 @@ type Storage struct {
 }
 
 var (
+	// ErrNoUniqueWithinLimit means we cant find unique ID within given time period
 	ErrNoUniqueWithinLimit = errors.New("cannot create unique id")
-	ErrNotFound            = errors.New("item not found")
-	ErrDataCorrupted       = errors.New("item data was corrupted")
+	// ErrNotFound means we have no data gor given ID
+	ErrNotFound = errors.New("item not found")
+	// ErrDataCorrupted means we cannot fetch data from cache
+	ErrDataCorrupted = errors.New("item data was corrupted")
 )
 
+// NewStorage returns new Storage object
 func NewStorage(cfg StorageConfig) Storage {
 	return Storage{
 		Meta: cache.New[string, *gen.ItemMeta](cfg.MetaTTL, cfg.CleanupInterval),
@@ -41,6 +47,7 @@ func NewStorage(cfg StorageConfig) Storage {
 	//TODO - Data. OnEvicted - update Meta.Status
 }
 
+// SetMeta prepares and saves item metadata and secret
 func (store Storage) SetMeta(owner string, req *gen.NewItemRequest) (*ulid.ULID, error) {
 	// Validate expiration
 	var expire time.Duration
@@ -88,6 +95,7 @@ func (store Storage) SetMeta(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 	return nil, ErrNoUniqueWithinLimit
 }
 
+// GetMeta returns item metadata
 func (store Storage) GetMeta(id string) (*gen.ItemMeta, error) {
 	meta, ok := store.Meta.Get(id)
 	if !ok {
@@ -97,6 +105,7 @@ func (store Storage) GetMeta(id string) (*gen.ItemMeta, error) {
 	return meta, nil
 }
 
+// GetData returns item data (secret)
 func (store Storage) GetData(id string) (*gen.ItemData, error) {
 	data, ok := store.Data.Get(id)
 	if !ok {
@@ -118,6 +127,7 @@ func (store Storage) GetData(id string) (*gen.ItemData, error) {
 	return &rv, nil
 }
 
+// Items returns items, created by current user
 func (store Storage) Items(owner string) (*gen.ItemList, error) {
 	cacheItems := store.Meta.Items()
 	items := &gen.ItemList{Items: []*gen.ItemMetaWithId{}}
@@ -132,6 +142,7 @@ func (store Storage) Items(owner string) (*gen.ItemList, error) {
 	return items, nil
 }
 
+// Stats returns global and user's item counters
 func (store Storage) Stats(owner string) (*gen.StatsResponse, error) {
 	cacheItems := store.Meta.Items()
 	stat := &gen.StatsResponse{My: &gen.Stats{}, Other: &gen.Stats{}}
