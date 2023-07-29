@@ -1,0 +1,48 @@
+# d2 --layout=elk arch.d2 arch.svg
+web: Internet {
+  br: Browser {
+    page: Static page
+    js: Javascript API / Swagger
+    js.shape: parallelogram
+  }
+  grpcc: GRPC-client
+  grpcc.shape: parallelogram
+}
+srv: Server {
+  tr: Traefik+LE {
+    httpf: HTTPS Front
+    grpcf: GRPC Front
+    _._.web.br -> httpf: https
+    _._.web.grpcc -> grpcf: GRPC
+  }
+  so: Showonce {
+    http: Showonce HTTP FE
+    _.tr.httpf -> http: http
+    pub: Showonce GRPC Public service
+    pub.shape: package
+    _.tr.grpcf -> pub: h2c
+    static: Static FS
+    http -> static: public_page_req
+    gw_pub: Public API GRPC Gateway
+    gw_pub.shape: parallelogram
+    http -> gw_pub: public_api_req
+    oauth: Oauth2
+    oauth.shape: hexagon
+
+    http -> oauth: private_req
+    oauth -> static: page_req
+    gw_priv: Private API GRPC Gateway
+    gw_priv.shape: parallelogram
+    oauth -> gw_priv: api_req
+    gw_pub -> pub: GRPC
+
+    priv: Showonce GRPC Private service
+    priv.shape: package
+    gw_priv -> priv: GRPC
+
+    st: Showonce Storage
+    st.shape: stored_data
+    pub -> st
+    priv -> st
+  }
+}
