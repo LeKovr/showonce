@@ -87,12 +87,7 @@ linters:
     - varnamelen
     - wrapcheck
     - wsl
-    # temp before release
-    - revive
-    - gocritic
-    - godot
-    - gofumpt
-    - gci
+    - gci # conflict with goimports
     # temp: disputable rules
     - nestif
     - funlen

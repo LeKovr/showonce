@@ -28,17 +28,13 @@ func NewPublicService(db Storage) *PublicServiceImpl {
 }
 
 // GetMetadata - вернуть метаданные по id.
-func (service PublicServiceImpl) GetMetadata(ctx context.Context, id *gen.ItemId) (*gen.ItemMeta, error) {
-	log := logr.FromContextOrDiscard(ctx)
-	log.Info("WANTMeta", "id", id)
-	//tn := timestamppb.Now()
-	//rv = &gen.ItemMeta{Title: "message", Status: 1, CreatedAt: tn, ModifiedAt: tn}
+func (service PublicServiceImpl) GetMetadata(_ context.Context, id *gen.ItemId) (*gen.ItemMeta, error) {
 	rv, err := service.Store.GetMeta(id.Id)
 	return rv, err
 }
 
 // GetData -вернуть контент по id.
-func (service PublicServiceImpl) GetData(ctx context.Context, id *gen.ItemId) (*gen.ItemData, error) {
+func (service PublicServiceImpl) GetData(_ context.Context, id *gen.ItemId) (*gen.ItemData, error) {
 	rv, err := service.Store.GetData(id.Id)
 	return rv, err
 }
@@ -97,13 +93,11 @@ func fetchUser(ctx context.Context) (*string, error) {
 	if !ok {
 		return nil, errMissingMetadata
 	}
-	// Fetch X-Username
+	// Fetch Username
 	user := md["user"][0]
-	//	r.Header.Get(srv.userHeader)
 	log := logr.FromContextOrDiscard(ctx)
 	if user == "" {
 		log.Info("Username must be set")
-		//		http.Error(w, "Username must be set", http.StatusUnauthorized)
 		return nil, errMissingMetadata
 	}
 	log.Info("USER", "name", user)

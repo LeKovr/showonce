@@ -4,11 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/metadata"
-
 	app "github.com/LeKovr/showonce"
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/metadata"
 )
 
 func TestRPC(t *testing.T) {

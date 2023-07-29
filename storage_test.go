@@ -3,10 +3,9 @@ package showonce_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	app "github.com/LeKovr/showonce"
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFlow(t *testing.T) {
