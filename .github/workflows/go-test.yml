@@ -31,4 +31,12 @@ jobs:
           category: my-gosec-tool
       - name: Test
         run: go test -v -tags test ./...
+      - name: Test & publish code coverage
+        uses: paambaati/codeclimate-action@v3.2.0
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        with:
+          coverageCommand: go test -tags test -race -covermode=atomic -coverprofile=c.out ./...
+          prefix: "github.com/LeKovr/showonce"
+          debug: true
 

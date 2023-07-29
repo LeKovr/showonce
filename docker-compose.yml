@@ -9,14 +9,13 @@ services:
       - traefik.http.routers.${APP_TAG}.rule=Host(`${APP_SITE:?Must be set}`)
       - traefik.http.routers.${APP_TAG}.service=${APP_TAG}
       - traefik.http.services.${APP_TAG}.loadbalancer.server.port=8080
-
-      - traefik.http.services.${APP_TAG}-grpc.loadbalancer.server.scheme=h2c
-      - traefik.http.services.${APP_TAG}-grpc.loadbalancer.server.port=8081
-      - traefik.http.routers.${APP_TAG}-grpc.rule=Host(`grpc.${APP_SITE}`)
-      - traefik.http.routers.${APP_TAG}-grpc.tls=${USE_TLS}
-      - traefik.http.routers.${APP_TAG}-grpc.tls.certresolver=default
-      - traefik.http.routers.${APP_TAG}-grpc.service=${APP_TAG}-grpc
-
+      # # Uncomment this to have GRPC outside
+      # - traefik.http.services.${APP_TAG}-grpc.loadbalancer.server.scheme=h2c
+      # - traefik.http.services.${APP_TAG}-grpc.loadbalancer.server.port=8081
+      # - traefik.http.routers.${APP_TAG}-grpc.rule=Host(`grpc.${APP_SITE}`)
+      # - traefik.http.routers.${APP_TAG}-grpc.tls=${USE_TLS}
+      # - traefik.http.routers.${APP_TAG}-grpc.tls.certresolver=default
+      # - traefik.http.routers.${APP_TAG}-grpc.service=${APP_TAG}-grpc
     command:
       --log.debug --as.my_url ${HTTP_PROTO}://${APP_SITE} --as.cookie_name showonce_token --root /static
     volumes:
@@ -29,11 +28,8 @@ services:
       - AS_CLIENT_KEY
       - AS_COOKIE_SIGN_KEY
       - AS_COOKIE_CRYPT_KEY
-
     build:
       context: .
       args:
         APP_VER: "${APP_VER:-}"
         APP: "${APP_NAME:-}"
-        TARGETOS: "${TARGETOS}"
-        TARGETARCH: "${TARGETARCH}"

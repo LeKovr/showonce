@@ -1,5 +1,5 @@
-# Run tests on every push
-name: GoTestAlways
+# Run tests on every push for extra branches
+name: GoTestExtra
 
 on:
   push:

@@ -35,9 +35,7 @@ func TestRunErrors(t *testing.T) {
 	ctx := context.Background()
 	for _, tt := range tests {
 		os.Args = append([]string{a[0]}, tt.args...)
-
 		var c int
-
 		cmd.Run(ctx, func(code int) { c = code })
 		assert.Equal(t, tt.code, c, tt.name)
 	}
@@ -73,19 +71,6 @@ func GetPorts(t *testing.T) []int {
 	return []int{p1, p2}
 }
 
-/*
-func GetPorts(t *testing.T) (p1, p2 int) {
-	// Find ports
-	var err error
-	p1, err = GetFreePort()
-	assert.NoError(t, err, "Port")
-	p2, err = GetFreePort()
-	assert.NoError(t, err, "Port2")
-	return // p1, p2
-}
-
-*/
-
 // Code from https://gist.github.com/sevkin/96bdae9274465b2d09191384f86ef39d
 
 // GetFreePort asks the kernel for a free open port that is ready to use.
@@ -95,6 +80,7 @@ func GetFreePort() (int, error) {
 	if a, err = net.ResolveTCPAddr("tcp", "localhost:0"); err == nil {
 		var l *net.TCPListener
 		if l, err = net.ListenTCP("tcp", a); err == nil {
+			// sample for https://www.joeshaw.org/dont-defer-close-on-writable-files/
 			if port, ok := l.Addr().(*net.TCPAddr); ok {
 				err = l.Close()
 				return port.Port, err
