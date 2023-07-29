@@ -9,6 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      # required for all workflows
+      security-events: write
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
@@ -28,7 +31,7 @@ jobs:
           category: my-gosec-tool
       - name: Test
         run: go test -v -tags test ./...
-      - name: Update coverage report
+      - name: Update local coverage report
         uses: ncruces/go-coverage-report@v0
         with:
           report: 'true'
