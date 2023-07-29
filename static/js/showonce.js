@@ -119,8 +119,14 @@ function showItem(item) {
   for (const [ key, value ] of Object.entries(item) ) {
     const field = elements.namedItem(key)
     var val = value;
-    if (key=='status') val=mkStatus(value)
-    else if (key=='createdAt' || key=='modifiedAt') val=mkStamp(value);
+    switch (key) {
+      case 'status':
+        val = mkStatus(value);
+        break;
+      case 'createdAt':
+      case 'modifiedAt':
+        val = mkStamp(value);
+    }
     field && (field.value = val)
   }
   document.getElementById('meta').style.display = 'initial';
