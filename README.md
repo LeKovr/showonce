@@ -1,7 +1,23 @@
----
-gitea: none
-include_toc: true
----
+
+[![Go Reference][ref1]][ref2]
+ [![GitHub Release][gr1]][gr2]
+ [![codecov][cc1]][cc2]
+ [![GoCard][gc1]][gc2]
+ [![Build Status][bs1]][bs2]
+ [![GitHub license][gl1]][gl2]
+
+[ref1]: https://pkg.go.dev/badge/github.com/LeKovr/showonce.svg
+[ref2]: https://pkg.go.dev/github.com/LeKovr/showonce
+[cc1]: https://github.com/LeKovr/showonce/wiki/coverage.svg
+[cc2]: https://raw.githack.com/wiki/LeKovr/showonce/coverage.html
+[gc1]: https://goreportcard.com/badge/github.com/LeKovr/showonce
+[gc2]: https://goreportcard.com/report/github.com/LeKovr/showonce
+[bs1]: https://github.com/LeKovr/showonce/actions/workflows/docker-publish.yml/badge.svg
+[bs2]: http://github.com/LeKovr/showonce/actions/workflows/docker-publish.yml
+[gr1]: https://img.shields.io/github/release/LeKovr/showonce.svg
+[gr2]: https://github.com/LeKovr/showonce/releases
+[gl1]: https://img.shields.io/github/license/LeKovr/showonce.svg
+[gl2]: https://github.com/LeKovr/showonce/blob/master/LICENSE
 
 # Шованс (Show once)
 
