@@ -1,0 +1,27 @@
+name: Go test coverage
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+      repository-projects: write
+
+    steps:
+      - name: Update local coverage report
+        uses: ncruces/go-coverage-report@v0
+        with:
+          report: 'true'
+          chart: 'true'
+          amend: 'false'
+        if: |
+          github.event_name == 'push'
+        continue-on-error: true
+

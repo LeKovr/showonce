@@ -11,9 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
-      pull-requests: write
-      issues: write
-      repository-projects: write
 
     steps:
       - uses: actions/checkout@v3
@@ -34,13 +31,4 @@ jobs:
           category: my-gosec-tool
       - name: Test
         run: go test -v -tags test ./...
-      - name: Update local coverage report
-        uses: ncruces/go-coverage-report@v0
-        with:
-          report: 'true'
-          chart: 'true'
-          amend: 'false'
-        if: |
-          github.event_name == 'push'
-        continue-on-error: true
 
