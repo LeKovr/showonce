@@ -5,8 +5,11 @@
 
 package main
 
-import "os"
+import (
+	"context"
+	"os"
+)
 
 func main() {
-	Run(os.Exit)
+	Run(context.Background(), os.Exit)
 }

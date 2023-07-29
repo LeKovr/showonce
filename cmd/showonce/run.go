@@ -15,37 +15,35 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/LeKovr/go-kit/config"
+
+	"github.com/LeKovr/go-kit/logger"
+
+	// importing implementation.
+	app "github.com/LeKovr/showonce"
+	"github.com/LeKovr/showonce/static"
+
+	// importing generated stubs.
+	gen "github.com/LeKovr/showonce/zgen/go/proto"
+	"github.com/dopos/narra"
 	"github.com/felixge/httpsnoop"
 	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/soheilhy/cmux"
 	"golang.org/x/sync/errgroup"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
-
-	// "google.golang.org/grpc/credentials/insecure"
-
-	"github.com/LeKovr/go-kit/config"
-	"github.com/LeKovr/go-kit/logger"
-	"github.com/dopos/narra"
-
-	// importing generated stubs
-	gen "github.com/LeKovr/showonce/zgen/go/proto"
-	// importing implementation
-	app "github.com/LeKovr/showonce"
-	"github.com/LeKovr/showonce/static"
 )
 
-// Config holds all config vars
+// Config holds all config vars.
 type Config struct {
 	Listen      string        `long:"listen" default:":8080" description:"Addr and port which server listens at"`
 	ListenGRPC  string        `long:"listen_grpc" default:":8081" description:"Addr and port which GRPC pub server listens at"`
 	Root        string        `long:"root" env:"ROOT" default:""  description:"Static files root directory"`
 	PrivPrefix  string        `long:"priv" default:"/my/" description:"URI prefix for pages which requires auth"`
-	GracePeriod time.Duration `long:"grace" default:"1m" description:"Stop grace period"`
+	GracePeriod time.Duration `long:"grace" default:"10s" description:"Stop grace period"`
 
 	Logger     logger.Config     `group:"Logging Options" namespace:"log" env-namespace:"LOG"`
 	AuthServer narra.Config      `group:"Auth Service Options" namespace:"as" env-namespace:"AS"`
@@ -56,11 +54,11 @@ const (
 	application = "showonce"
 )
 
-// Actual main.version value will be set at build time
+// Actual main.version value will be set at build time.
 var version = "0.0-dev"
 
-// Run app and exit via given exitFunc
-func Run(exitFunc func(code int)) {
+// Run app and exit via given exitFunc.
+func Run(ctx context.Context, exitFunc func(code int)) {
 	// Load config
 	var cfg Config
 	err := config.Open(&cfg)
@@ -70,14 +68,11 @@ func Run(exitFunc func(code int)) {
 	}
 	log := logger.New(cfg.Logger, nil)
 	log.Info(application, "version", version)
-
+	ctx = logr.NewContext(ctx, log)
 	db := app.NewStorage(cfg.Storage)
 
 	Interceptor := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		// Invoke 'handler' to use your gRPC server implementation and get
-		// the response.
-		log.Info("ADD GRPC logger")
-
+		// Inject logger.
 		return handler(logr.NewContext(ctx, log), req)
 	}
 
@@ -87,23 +82,19 @@ func Run(exitFunc func(code int)) {
 
 	// Public GRPC Service
 	// Доступен извне, отдельный порт
-	grpcPubSever := grpc.NewServer(opts...)
-	gen.RegisterPublicServiceServer(grpcPubSever, app.NewPublicService(db))
-	reflection.Register(grpcPubSever)
+	grpcPubServer := grpc.NewServer(opts...)
+	gen.RegisterPublicServiceServer(grpcPubServer, app.NewPublicService(db))
+	reflection.Register(grpcPubServer)
 	muxPub := runtime.NewServeMux()
 	dialOpts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
-	err = gen.RegisterPublicServiceHandlerFromEndpoint(context.Background(), muxPub, cfg.ListenGRPC, dialOpts)
-	if err != nil {
-		return
 	}
 
 	// Private GRPC Service
 	// Доступен только через HTTP
 	// Авторизацию делает HTTP Handler
-	grpcPrivSever := grpc.NewServer(opts...) // TODO: UnaryInterceptor: md["user"]!=""
-	gen.RegisterPrivateServiceServer(grpcPrivSever, app.NewPrivateService(db))
+	grpcPrivServer := grpc.NewServer(opts...) // TODO: UnaryInterceptor: md["user"]!=""
+	gen.RegisterPrivateServiceServer(grpcPrivServer, app.NewPrivateService(db))
 	mux := runtime.NewServeMux(
 		runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
 			userName := request.Header.Get(cfg.AuthServer.UserHeader)
@@ -112,11 +103,6 @@ func Run(exitFunc func(code int)) {
 			return md
 		}),
 	)
-	clientAddr := chooseClientAddr(cfg.Listen)
-	err = gen.RegisterPrivateServiceHandlerFromEndpoint(context.Background(), mux, clientAddr, dialOpts)
-	if err != nil {
-		return
-	}
 
 	// static pages server
 	hfs, _ := static.New(cfg.Root)
@@ -131,10 +117,19 @@ func Run(exitFunc func(code int)) {
 	re := regexp.MustCompile("^" + cfg.PrivPrefix)
 	hh := auth.ProtectMiddleware(withGW(mux, muxPub, muxHTTP), re)
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 	ctx = logger.NewContext(ctx, log)
 
+	err = gen.RegisterPublicServiceHandlerFromEndpoint(ctx, muxPub, cfg.ListenGRPC, dialOpts)
+	if err != nil {
+		return
+	}
+	clientAddr := chooseClientAddr(cfg.Listen)
+	err = gen.RegisterPrivateServiceHandlerFromEndpoint(ctx, mux, clientAddr, dialOpts)
+	if err != nil {
+		return
+	}
 	// Creating a normal HTTP server
 	srv := &http.Server{
 		Addr:    cfg.Listen,
@@ -171,10 +166,10 @@ func Run(exitFunc func(code int)) {
 		return srv.Serve(httpL)
 	})
 	g.Go(func() error {
-		return grpcPrivSever.Serve(grpcL)
+		return grpcPrivServer.Serve(grpcL)
 	})
 	g.Go(func() error {
-		return grpcPubSever.Serve(listenerPub)
+		return grpcPubServer.Serve(listenerPub)
 	})
 	g.Go(func() error {
 		log.V(1).Info("Start", "addr", cfg.Listen)
@@ -186,15 +181,17 @@ func Run(exitFunc func(code int)) {
 		stop()
 		timedCtx, cancel := context.WithTimeout(ctx, cfg.GracePeriod)
 		defer cancel()
+		grpcPrivServer.GracefulStop()
+		grpcPubServer.GracefulStop()
 		return srv.Shutdown(timedCtx)
 	})
-	if er := g.Wait(); er != nil && !errors.Is(er, net.ErrClosed) { //er != http.ErrServerClosed {
+	if er := g.Wait(); er != nil && !errors.Is(er, net.ErrClosed) {
 		err = er
 	}
 	log.Info("Exit")
 }
 
-// withReqLogger prints HTTP request log
+// withReqLogger prints HTTP request log.
 func withReqLogger(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		m := httpsnoop.CaptureMetrics(handler, writer, request)
@@ -216,7 +213,7 @@ func withGW(gwmux, gwmuxPub *runtime.ServeMux, handler http.Handler) http.Handle
 	})
 }
 
-// chooseClientAddr chooses localhost if server listens any ip
+// chooseClientAddr chooses localhost if server listens any ip.
 func chooseClientAddr(addr string) string {
 	parts := strings.SplitN(addr, ":", 2)
 	if parts[0] == "0.0.0.0" || parts[0] == "" {
