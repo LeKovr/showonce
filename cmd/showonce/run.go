@@ -137,6 +137,9 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 		BaseContext: func(_ net.Listener) context.Context {
 			return ctx
 		},
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
 	}
 
 	// creating a listener for server
