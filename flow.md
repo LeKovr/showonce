@@ -1,1 +1,0 @@
-![Data flow](flow.svg)

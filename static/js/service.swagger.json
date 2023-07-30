@@ -1,14 +1,14 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Service api",
+    "title": "Showonce API",
     "version": "1.0",
     "contact": {
       "name": "Showonce project",
       "url": "https://github.com/LeKovr/showonce"
     },
     "license": {
-      "name": "MIT License",
+      "name": "Apache 2.0 License",
       "url": "https://github.com/LeKovr/showonce/blob/master/LICENSE.md"
     }
   },
@@ -29,7 +29,7 @@
   "paths": {
     "/api/item": {
       "get": {
-        "summary": "вернуть метаданные по id",
+        "summary": "вернуть метаданные секрета по id",
         "operationId": "PublicService_GetMetadata",
         "responses": {
           "200": {
@@ -60,7 +60,7 @@
     },
     "/api/item/{id}": {
       "post": {
-        "summary": "вернуть контент по id",
+        "summary": "вернуть текст секрета по id",
         "operationId": "PublicService_GetData",
         "responses": {
           "200": {
@@ -91,7 +91,7 @@
     },
     "/my/api/items": {
       "get": {
-        "summary": "вернуть список своих текстов",
+        "summary": "вернуть список своих секретов",
         "operationId": "PrivateService_GetItems",
         "responses": {
           "200": {
@@ -109,13 +109,21 @@
         },
         "tags": [
           "PrivateService"
+        ],
+        "security": [
+          {
+            "OAuth2": [
+              "read",
+              "write"
+            ]
+          }
         ]
       }
     },
     "/my/api/new": {
       "post": {
-        "summary": "создать контент",
-        "operationId": "PrivateService_NewMessage",
+        "summary": "создать секрет",
+        "operationId": "PrivateService_NewItem",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -155,7 +163,7 @@
     },
     "/my/api/stat": {
       "get": {
-        "summary": "общая статистика (всего/активных текстов, макс дата активного текста)",
+        "summary": "общая статистика по количеству секретов",
         "operationId": "PrivateService_GetStats",
         "responses": {
           "200": {
@@ -173,6 +181,14 @@
         },
         "tags": [
           "PrivateService"
+        ],
+        "security": [
+          {
+            "OAuth2": [
+              "read",
+              "write"
+            ]
+          }
         ]
       }
     }
@@ -211,7 +227,8 @@
         "data": {
           "type": "string"
         }
-      }
+      },
+      "title": "Данные секрета"
     },
     "v1ItemId": {
       "type": "object",
@@ -220,7 +237,7 @@
           "type": "string"
         }
       },
-      "title": "Item ULID"
+      "title": "Идентификатор (ULID)"
     },
     "v1ItemList": {
       "type": "object",
@@ -231,7 +248,8 @@
             "$ref": "#/definitions/v1ItemMetaWithId"
           }
         }
-      }
+      },
+      "title": "Список секретов"
     },
     "v1ItemMeta": {
       "type": "object",
@@ -256,7 +274,8 @@
           "type": "string",
           "format": "date-time"
         }
-      }
+      },
+      "title": "Метаданные секрета"
     },
     "v1ItemMetaWithId": {
       "type": "object",
@@ -267,7 +286,8 @@
         "meta": {
           "$ref": "#/definitions/v1ItemMeta"
         }
-      }
+      },
+      "title": "Метаданные секрета с идентификатором"
     },
     "v1ItemStatus": {
       "type": "string",
@@ -279,7 +299,8 @@
         "CLEARED"
       ],
       "default": "UNKNOWN",
-      "title": "- UNKNOWN: A Standard tournament\n - WAIT: Item was not read\n - READ: Item was read\n - EXPIRED: Item was expired\n - CLEARED: Item was cleared"
+      "description": "- UNKNOWN: A Standard tournament\n - WAIT: Готово к прочтению\n - READ: Прочитано\n - EXPIRED: Истек срок актуальности\n - CLEARED: Удалено",
+      "title": "Статус секрета"
     },
     "v1NewItemRequest": {
       "type": "object",
@@ -299,7 +320,8 @@
         "data": {
           "type": "string"
         }
-      }
+      },
+      "title": "Аргументы запроса на создание"
     },
     "v1Stats": {
       "type": "object",
@@ -320,7 +342,8 @@
           "type": "integer",
           "format": "int32"
         }
-      }
+      },
+      "title": "Статистика по секретам"
     },
     "v1StatsResponse": {
       "type": "object",
@@ -331,11 +354,12 @@
         "other": {
           "$ref": "#/definitions/v1Stats"
         }
-      }
+      },
+      "title": "Ответ на запрос статистика"
     }
   },
   "externalDocs": {
-    "description": "More about apisite",
+    "description": "More about author",
     "url": "https://lekovr.github.io"
   }
 }

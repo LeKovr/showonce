@@ -23,9 +23,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PublicServiceClient interface {
-	// вернуть метаданные по id
+	// вернуть метаданные секрета по id
 	GetMetadata(ctx context.Context, in *ItemId, opts ...grpc.CallOption) (*ItemMeta, error)
-	// вернуть контент по id
+	// вернуть текст секрета по id
 	GetData(ctx context.Context, in *ItemId, opts ...grpc.CallOption) (*ItemData, error)
 }
 
@@ -59,9 +59,9 @@ func (c *publicServiceClient) GetData(ctx context.Context, in *ItemId, opts ...g
 // All implementations must embed UnimplementedPublicServiceServer
 // for forward compatibility
 type PublicServiceServer interface {
-	// вернуть метаданные по id
+	// вернуть метаданные секрета по id
 	GetMetadata(context.Context, *ItemId) (*ItemMeta, error)
-	// вернуть контент по id
+	// вернуть текст секрета по id
 	GetData(context.Context, *ItemId) (*ItemData, error)
 	mustEmbedUnimplementedPublicServiceServer()
 }
@@ -149,11 +149,11 @@ var PublicService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PrivateServiceClient interface {
-	// создать контент
-	NewMessage(ctx context.Context, in *NewItemRequest, opts ...grpc.CallOption) (*ItemId, error)
-	// вернуть список своих текстов
+	// создать секрет
+	NewItem(ctx context.Context, in *NewItemRequest, opts ...grpc.CallOption) (*ItemId, error)
+	// вернуть список своих секретов
 	GetItems(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ItemList, error)
-	// общая статистика (всего/активных текстов, макс дата активного текста)
+	// общая статистика по количеству секретов
 	GetStats(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*StatsResponse, error)
 }
 
@@ -165,9 +165,9 @@ func NewPrivateServiceClient(cc grpc.ClientConnInterface) PrivateServiceClient {
 	return &privateServiceClient{cc}
 }
 
-func (c *privateServiceClient) NewMessage(ctx context.Context, in *NewItemRequest, opts ...grpc.CallOption) (*ItemId, error) {
+func (c *privateServiceClient) NewItem(ctx context.Context, in *NewItemRequest, opts ...grpc.CallOption) (*ItemId, error) {
 	out := new(ItemId)
-	err := c.cc.Invoke(ctx, "/api.showonce.v1.PrivateService/NewMessage", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.showonce.v1.PrivateService/NewItem", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -196,11 +196,11 @@ func (c *privateServiceClient) GetStats(ctx context.Context, in *emptypb.Empty, 
 // All implementations must embed UnimplementedPrivateServiceServer
 // for forward compatibility
 type PrivateServiceServer interface {
-	// создать контент
-	NewMessage(context.Context, *NewItemRequest) (*ItemId, error)
-	// вернуть список своих текстов
+	// создать секрет
+	NewItem(context.Context, *NewItemRequest) (*ItemId, error)
+	// вернуть список своих секретов
 	GetItems(context.Context, *emptypb.Empty) (*ItemList, error)
-	// общая статистика (всего/активных текстов, макс дата активного текста)
+	// общая статистика по количеству секретов
 	GetStats(context.Context, *emptypb.Empty) (*StatsResponse, error)
 	mustEmbedUnimplementedPrivateServiceServer()
 }
@@ -209,8 +209,8 @@ type PrivateServiceServer interface {
 type UnimplementedPrivateServiceServer struct {
 }
 
-func (UnimplementedPrivateServiceServer) NewMessage(context.Context, *NewItemRequest) (*ItemId, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NewMessage not implemented")
+func (UnimplementedPrivateServiceServer) NewItem(context.Context, *NewItemRequest) (*ItemId, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NewItem not implemented")
 }
 func (UnimplementedPrivateServiceServer) GetItems(context.Context, *emptypb.Empty) (*ItemList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetItems not implemented")
@@ -231,20 +231,20 @@ func RegisterPrivateServiceServer(s grpc.ServiceRegistrar, srv PrivateServiceSer
 	s.RegisterService(&PrivateService_ServiceDesc, srv)
 }
 
-func _PrivateService_NewMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _PrivateService_NewItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NewItemRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PrivateServiceServer).NewMessage(ctx, in)
+		return srv.(PrivateServiceServer).NewItem(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.showonce.v1.PrivateService/NewMessage",
+		FullMethod: "/api.showonce.v1.PrivateService/NewItem",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PrivateServiceServer).NewMessage(ctx, req.(*NewItemRequest))
+		return srv.(PrivateServiceServer).NewItem(ctx, req.(*NewItemRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -293,8 +293,8 @@ var PrivateService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PrivateServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "NewMessage",
-			Handler:    _PrivateService_NewMessage_Handler,
+			MethodName: "NewItem",
+			Handler:    _PrivateService_NewItem_Handler,
 		},
 		{
 			MethodName: "GetItems",

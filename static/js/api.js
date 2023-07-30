@@ -154,7 +154,7 @@ var AppAPI = (() => {
     }
   };
   var PrivateService = class {
-    static NewMessage(req, initReq) {
+    static NewItem(req, initReq) {
       return fetchReq(`/my/api/new`, { ...initReq, method: "POST", body: JSON.stringify(req, replacer) });
     }
     static GetItems(req, initReq) {

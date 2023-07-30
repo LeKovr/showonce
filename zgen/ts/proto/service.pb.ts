@@ -71,7 +71,7 @@ export class PublicService {
   }
 }
 export class PrivateService {
-  static NewMessage(req: NewItemRequest, initReq?: fm.InitReq): Promise<ItemId> {
+  static NewItem(req: NewItemRequest, initReq?: fm.InitReq): Promise<ItemId> {
     return fm.fetchReq<NewItemRequest, ItemId>(`/my/api/new`, {...initReq, method: "POST", body: JSON.stringify(req, fm.replacer)})
   }
   static GetItems(req: GoogleProtobufEmpty.Empty, initReq?: fm.InitReq): Promise<ItemList> {

@@ -14,13 +14,13 @@ import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 service PublicService {
-  // вернуть метаданные по id
+  // вернуть метаданные секрета по id
   rpc GetMetadata(ItemId) returns (ItemMeta) {
     option (google.api.http) = {
       get: "/api/item"
     };
   }
-  // вернуть контент по id
+  // вернуть текст секрета по id
   rpc GetData(ItemId) returns (ItemData) {
     option (google.api.http) = {
       post: "/api/item/{id}"
@@ -30,8 +30,8 @@ service PublicService {
 
 // Private
 service PrivateService {
-  // создать контент
-  rpc NewMessage(NewItemRequest) returns (ItemId){
+  // создать секрет
+  rpc NewItem(NewItemRequest) returns (ItemId){
     option (google.api.http) = {
       post: "/my/api/new"
       body: "*"
@@ -48,77 +48,107 @@ service PrivateService {
             }
     };
   }
-  // вернуть список своих текстов
+
+  // вернуть список своих секретов
   rpc GetItems(google.protobuf.Empty) returns (ItemList) {
     option (google.api.http) = {
       get: "/my/api/items"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "OAuth2";
+                    value: {
+                        scope: "read";
+                        scope: "write";
+                    }
+                }
+            }
+    };
   }
 
-  // общая статистика (всего/активных текстов, макс дата активного текста)
+  // общая статистика по количеству секретов
   rpc GetStats(google.protobuf.Empty) returns (StatsResponse) {
     option (google.api.http) = {
       get: "/my/api/stat"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "OAuth2";
+                    value: {
+                        scope: "read";
+                        scope: "write";
+                    }
+                }
+            }
+    };
   }
-
 }
 
+// Статус секрета
 enum ItemStatus {
 	// A Standard tournament
 	UNKNOWN = 0;
-	// Item was not read
+	// Готово к прочтению
 	WAIT = 1;
-	// Item was read
+	// Прочитано
 	READ = 2;
-	// Item was expired
+	// Истек срок актуальности
 	EXPIRED = 3;
-	// Item was cleared
+	// Удалено
 	CLEARED = 4;
   }
   
-// Item ULID
+// Идентификатор (ULID)
 message ItemId { string id = 1; }
 
+// Аргументы запроса на создание
 message NewItemRequest {
-	string title = 1;
-	string group = 2;
-	string expire = 3;
-	string expire_unit = 4;
-	string data = 5;
+	string title  = 1;      // описание
+	string group  = 2;      // идентификатор для группировки
+	string expire = 3;      // срок актуальности
+	string expire_unit = 4; // единица срока актуальности ("d" - день, остальные варианты - как в go: "ns", "us" (or "µs"), "ms", "s", "m", "h")
+	string data   = 5;      // текст секрета, удаляется после первого показа
 }
 
+// Данные секрета
 message ItemData {
-	string data = 1;
+	string data = 1; // Данные секрета
 }
 
+// Метаданные секрета
 message ItemMeta {
-	string title = 1;
-	string group = 2;
-	string owner = 3;
-	ItemStatus status = 4;
-	google.protobuf.Timestamp created_at = 5;
-	google.protobuf.Timestamp modified_at = 6; // >now() means Expire (and Status=1)
+	string title = 1;      // описание
+	string group = 2;      // идентификатор для группировки
+	string owner = 3;      // автор
+	ItemStatus status = 4; // статус
+	google.protobuf.Timestamp created_at = 5; // момент создания
+	google.protobuf.Timestamp modified_at = 6; // первоначально - срок автоудаления, после показа - момент показа
 }
 
+// Метаданные секрета с идентификатором
 message ItemMetaWithId {
-	string id =1;
-	ItemMeta meta = 2;
+	string id     = 1; // идентификатор
+	ItemMeta meta = 2; // метаданные
 }
 
+// Список секретов
 message ItemList {
-	repeated ItemMetaWithId items = 1;
+	repeated ItemMetaWithId items = 1; // Список секретов
 }
 
+// Статистика по секретам
 message Stats {
-	int32 total=1;
-	int32 wait=2;
-	int32 read=3;
-	int32 expired=4;
+	int32 total=1;   // Всего в хранилище
+	int32 wait=2;    // Готово к прочтению
+	int32 read=3;    // Прочитано
+	int32 expired=4; // Истек срок актуальности
 }
 
+// Ответ на запрос статистика
 message StatsResponse {
-	Stats my =1;
-	Stats other =2;
+	Stats my =1;    // Данные по текущему пользователю
+	Stats other =2; // Данные по остальным пользователям
 }
 

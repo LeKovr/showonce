@@ -15,7 +15,8 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
-var errMissingMetadata = status.Errorf(codes.InvalidArgument, "no incoming metadata in rpc context")
+// ErrMetadataMissing means no user data found in request context.
+var ErrMetadataMissing = status.Errorf(codes.InvalidArgument, "no required metadata in rpc context")
 
 // PublicServiceImpl - реализация PublicService.
 type PublicServiceImpl struct {
@@ -51,17 +52,17 @@ func NewPrivateService(db storage.Iface) *PrivateServiceImpl {
 	return &PrivateServiceImpl{Store: db}
 }
 
-// NewMessage - создать контент.
-func (service PrivateServiceImpl) NewMessage(ctx context.Context, req *gen.NewItemRequest) (*gen.ItemId, error) {
+// NewItem - создать контент.
+func (service PrivateServiceImpl) NewItem(ctx context.Context, req *gen.NewItemRequest) (*gen.ItemId, error) {
 	user, err := fetchUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	idStr, err := service.Store.SetMeta(*user, req)
+	idStr, err := service.Store.SetItem(*user, req)
 	if err != nil {
 		log := logr.FromContextOrDiscard(ctx)
-		log.Error(err, "NewMessageError")
+		log.Error(err, "NewItemError")
 		return nil, err
 	}
 	return &gen.ItemId{Id: idStr.String()}, nil
@@ -89,18 +90,20 @@ func (service PrivateServiceImpl) GetStats(ctx context.Context, _ *emptypb.Empty
 	return rv, err
 }
 
+// fetchUser fetches user name from ctx metadata.
 func fetchUser(ctx context.Context) (*string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, errMissingMetadata
+		return nil, ErrMetadataMissing
 	}
 	// Fetch Username
-	user := md["user"][0]
+	users, ok := md["user"]
 	log := logr.FromContextOrDiscard(ctx)
-	if user == "" {
+	if !ok || len(users) == 0 || users[0] == "" {
 		log.Info("Username must be set")
-		return nil, errMissingMetadata
+		return nil, ErrMetadataMissing
 	}
+	user := users[0]
 	log.Info("USER", "name", user)
 	return &user, nil
 }

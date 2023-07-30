@@ -59,9 +59,9 @@ Private
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| NewMessage | [NewItemRequest](#api.showonce.v1.NewItemRequest) | [ItemId](#api.showonce.v1.ItemId) | создать контент |
-| GetItems | [.google.protobuf.Empty](#google.protobuf.Empty) | [ItemList](#api.showonce.v1.ItemList) | вернуть список своих текстов |
-| GetStats | [.google.protobuf.Empty](#google.protobuf.Empty) | [StatsResponse](#api.showonce.v1.StatsResponse) | общая статистика (всего/активных текстов, макс дата активного текста) |
+| NewItem | [NewItemRequest](#api.showonce.v1.NewItemRequest) | [ItemId](#api.showonce.v1.ItemId) | создать секрет |
+| GetItems | [.google.protobuf.Empty](#google.protobuf.Empty) | [ItemList](#api.showonce.v1.ItemList) | вернуть список своих секретов |
+| GetStats | [.google.protobuf.Empty](#google.protobuf.Empty) | [StatsResponse](#api.showonce.v1.StatsResponse) | общая статистика по количеству секретов |
 
 
 <a name="api.showonce.v1.PublicService"></a>
@@ -72,8 +72,8 @@ Private
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetMetadata | [ItemId](#api.showonce.v1.ItemId) | [ItemMeta](#api.showonce.v1.ItemMeta) | вернуть метаданные по id |
-| GetData | [ItemId](#api.showonce.v1.ItemId) | [ItemData](#api.showonce.v1.ItemData) | вернуть контент по id |
+| GetMetadata | [ItemId](#api.showonce.v1.ItemId) | [ItemMeta](#api.showonce.v1.ItemMeta) | вернуть метаданные секрета по id |
+| GetData | [ItemId](#api.showonce.v1.ItemId) | [ItemData](#api.showonce.v1.ItemData) | вернуть текст секрета по id |
 
  <!-- end services -->
 
@@ -82,12 +82,12 @@ Private
 
 ### ItemData
 
-
+Данные секрета
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| data | [string](#string) |  |  |
+| data | [string](#string) |  | Данные секрета |
 
 
 
@@ -98,7 +98,7 @@ Private
 
 ### ItemId
 
-Item ULID
+Идентификатор (ULID)
 
 
 | Field | Type | Label | Description |
@@ -114,12 +114,12 @@ Item ULID
 
 ### ItemList
 
-
+Список секретов
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| items | [ItemMetaWithId](#api.showonce.v1.ItemMetaWithId) | repeated |  |
+| items | [ItemMetaWithId](#api.showonce.v1.ItemMetaWithId) | repeated | Список секретов |
 
 
 
@@ -130,17 +130,17 @@ Item ULID
 
 ### ItemMeta
 
-
+Метаданные секрета
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| title | [string](#string) |  |  |
-| group | [string](#string) |  |  |
-| owner | [string](#string) |  |  |
-| status | [ItemStatus](#api.showonce.v1.ItemStatus) |  |  |
-| created_at | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  |  |
-| modified_at | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | >now() means Expire (and Status=1) |
+| title | [string](#string) |  | описание |
+| group | [string](#string) |  | идентификатор для группировки |
+| owner | [string](#string) |  | автор |
+| status | [ItemStatus](#api.showonce.v1.ItemStatus) |  | статус |
+| created_at | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | момент создания |
+| modified_at | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | первоначально - срок автоудаления, после показа - момент показа |
 
 
 
@@ -151,13 +151,13 @@ Item ULID
 
 ### ItemMetaWithId
 
-
+Метаданные секрета с идентификатором
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
-| meta | [ItemMeta](#api.showonce.v1.ItemMeta) |  |  |
+| id | [string](#string) |  | идентификатор |
+| meta | [ItemMeta](#api.showonce.v1.ItemMeta) |  | метаданные |
 
 
 
@@ -168,16 +168,16 @@ Item ULID
 
 ### NewItemRequest
 
-
+Аргументы запроса на создание
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| title | [string](#string) |  |  |
-| group | [string](#string) |  |  |
-| expire | [string](#string) |  |  |
-| expire_unit | [string](#string) |  |  |
-| data | [string](#string) |  |  |
+| title | [string](#string) |  | описание |
+| group | [string](#string) |  | идентификатор для группировки |
+| expire | [string](#string) |  | срок актуальности |
+| expire_unit | [string](#string) |  | единица срока актуальности ("d" - день, остальные варианты - как в go: "ns", "us" (or "µs"), "ms", "s", "m", "h") |
+| data | [string](#string) |  | текст секрета, удаляется после первого показа |
 
 
 
@@ -188,15 +188,15 @@ Item ULID
 
 ### Stats
 
-
+Статистика по секретам
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| total | [int32](#int32) |  |  |
-| wait | [int32](#int32) |  |  |
-| read | [int32](#int32) |  |  |
-| expired | [int32](#int32) |  |  |
+| total | [int32](#int32) |  | Всего в хранилище |
+| wait | [int32](#int32) |  | Готово к прочтению |
+| read | [int32](#int32) |  | Прочитано |
+| expired | [int32](#int32) |  | Истек срок актуальности |
 
 
 
@@ -207,13 +207,13 @@ Item ULID
 
 ### StatsResponse
 
-
+Ответ на запрос статистика
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| my | [Stats](#api.showonce.v1.Stats) |  |  |
-| other | [Stats](#api.showonce.v1.Stats) |  |  |
+| my | [Stats](#api.showonce.v1.Stats) |  | Данные по текущему пользователю |
+| other | [Stats](#api.showonce.v1.Stats) |  | Данные по остальным пользователям |
 
 
 
@@ -226,15 +226,15 @@ Item ULID
 
 ### ItemStatus
 
-
+Статус секрета
 
 | Name | Number | Description |
 | ---- | ------ | ----------- |
 | UNKNOWN | 0 | A Standard tournament |
-| WAIT | 1 | Item was not read |
-| READ | 2 | Item was read |
-| EXPIRED | 3 | Item was expired |
-| CLEARED | 4 | Item was cleared |
+| WAIT | 1 | Готово к прочтению |
+| READ | 2 | Прочитано |
+| EXPIRED | 3 | Истек срок актуальности |
+| CLEARED | 4 | Удалено |
 
 
  <!-- end enums -->

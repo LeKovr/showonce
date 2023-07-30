@@ -120,7 +120,7 @@ func local_request_PublicService_GetData_0(ctx context.Context, marshaler runtim
 
 }
 
-func request_PrivateService_NewMessage_0(ctx context.Context, marshaler runtime.Marshaler, client PrivateServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_PrivateService_NewItem_0(ctx context.Context, marshaler runtime.Marshaler, client PrivateServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq NewItemRequest
 	var metadata runtime.ServerMetadata
 
@@ -132,12 +132,12 @@ func request_PrivateService_NewMessage_0(ctx context.Context, marshaler runtime.
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.NewMessage(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.NewItem(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_PrivateService_NewMessage_0(ctx context.Context, marshaler runtime.Marshaler, server PrivateServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_PrivateService_NewItem_0(ctx context.Context, marshaler runtime.Marshaler, server PrivateServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq NewItemRequest
 	var metadata runtime.ServerMetadata
 
@@ -149,7 +149,7 @@ func local_request_PrivateService_NewMessage_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.NewMessage(ctx, &protoReq)
+	msg, err := server.NewItem(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -255,7 +255,7 @@ func RegisterPublicServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterPrivateServiceHandlerFromEndpoint instead.
 func RegisterPrivateServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server PrivateServiceServer) error {
 
-	mux.Handle("POST", pattern_PrivateService_NewMessage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_PrivateService_NewItem_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -263,12 +263,12 @@ func RegisterPrivateServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/api.showonce.v1.PrivateService/NewMessage", runtime.WithHTTPPathPattern("/my/api/new"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/api.showonce.v1.PrivateService/NewItem", runtime.WithHTTPPathPattern("/my/api/new"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_PrivateService_NewMessage_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_PrivateService_NewItem_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
@@ -276,7 +276,7 @@ func RegisterPrivateServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 			return
 		}
 
-		forward_PrivateService_NewMessage_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_PrivateService_NewItem_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -468,25 +468,25 @@ func RegisterPrivateServiceHandler(ctx context.Context, mux *runtime.ServeMux, c
 // "PrivateServiceClient" to call the correct interceptors.
 func RegisterPrivateServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client PrivateServiceClient) error {
 
-	mux.Handle("POST", pattern_PrivateService_NewMessage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_PrivateService_NewItem_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/api.showonce.v1.PrivateService/NewMessage", runtime.WithHTTPPathPattern("/my/api/new"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/api.showonce.v1.PrivateService/NewItem", runtime.WithHTTPPathPattern("/my/api/new"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_PrivateService_NewMessage_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_PrivateService_NewItem_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_PrivateService_NewMessage_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_PrivateService_NewItem_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -538,7 +538,7 @@ func RegisterPrivateServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 }
 
 var (
-	pattern_PrivateService_NewMessage_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"my", "api", "new"}, ""))
+	pattern_PrivateService_NewItem_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"my", "api", "new"}, ""))
 
 	pattern_PrivateService_GetItems_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"my", "api", "items"}, ""))
 
@@ -546,7 +546,7 @@ var (
 )
 
 var (
-	forward_PrivateService_NewMessage_0 = runtime.ForwardResponseMessage
+	forward_PrivateService_NewItem_0 = runtime.ForwardResponseMessage
 
 	forward_PrivateService_GetItems_0 = runtime.ForwardResponseMessage
 

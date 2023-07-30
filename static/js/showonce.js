@@ -61,7 +61,7 @@ function sendForm(form, path) {
     return false;
   }
   console.log("Ready to send"+JSON.stringify(fields));
-  AppAPI.PrivateService.NewMessage(fields).then(
+  AppAPI.PrivateService.NewItem(fields).then(
     function(value) { /* code if successful */
         var resp = value.id;
         if (resp == undefined) return;

@@ -38,15 +38,20 @@ var (
 
 // New returns new Storage object.
 func New(cfg Config) Storage {
-	return Storage{
-		Meta: zcache.New[string, *gen.ItemMeta](cfg.MetaTTL, cfg.CleanupInterval),
-		Data: zcache.New[string, string](cfg.DataTTL, cfg.CleanupInterval),
-	}
-	// TODO: Data. OnEvicted - update Meta.Status
+	meta := zcache.New[string, *gen.ItemMeta](cfg.MetaTTL, cfg.CleanupInterval)
+	data := zcache.New[string, string](cfg.DataTTL, cfg.CleanupInterval)
+	data.OnEvicted(func(k, _ string) {
+		// Set metadata status when data expires
+		if item, ok := meta.Get(k); ok {
+			item.Status = gen.ItemStatus_EXPIRED
+			meta.Set(k, item)
+		}
+	})
+	return Storage{Meta: meta, Data: data}
 }
 
-// SetMeta prepares and saves item metadata and secret.
-func (store Storage) SetMeta(owner string, req *gen.NewItemRequest) (*ulid.ULID, error) {
+// SetItem prepares and saves item metadata and secret.
+func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID, error) {
 	// Validate expiration
 	var expire time.Duration
 	if req.Expire != "" {

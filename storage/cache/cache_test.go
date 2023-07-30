@@ -21,9 +21,9 @@ func TestFlow(t *testing.T) {
 	}
 	user := "test"
 
-	id, err := db.SetMeta(user, item)
-	assert.NoError(t, err, "SetMeta")
-	assert.NotNil(t, id, "SetMetaNotNil")
+	id, err := db.SetItem(user, item)
+	assert.NoError(t, err, "SetItem")
+	assert.NotNil(t, id, "SetItemNotNil")
 
 	meta, err := db.GetMeta(id.String())
 	assert.NoError(t, err, "GetMeta")

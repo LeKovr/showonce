@@ -9,14 +9,14 @@ openapiOptions:
     - file: "proto/service.proto"
       option:
         info:
-          title: Service api
+          title: Showonce API
           contact:
             name: Showonce project
             url: https://github.com/LeKovr/showonce
           license:
-            name: MIT License
+            name: Apache 2.0 License
             url: https://github.com/LeKovr/showonce/blob/master/LICENSE.md
           version: "1.0"
         externalDocs:
-          description: More about apisite
+          description: More about author
           url: https://lekovr.github.io

@@ -3,19 +3,39 @@ package showonce_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	app "github.com/LeKovr/showonce"
 	storage "github.com/LeKovr/showonce/storage/cache"
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
-	"github.com/stretchr/testify/assert"
+	test_suite "github.com/stretchr/testify/suite"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/emptypb"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
-func TestRPC(t *testing.T) {
+type ShowonceTestSuite struct {
+	test_suite.Suite
+	User string
+	Pub  *app.PublicServiceImpl
+	Priv *app.PrivateServiceImpl
+}
+
+var empty = &emptypb.Empty{}
+
+func (suite *ShowonceTestSuite) SetupTest() {
 	cfg := storage.Config{}
 	db := storage.New(cfg)
 
+	suite.User = "test"
+	suite.Pub = app.NewPublicService(db)
+	suite.Priv = app.NewPrivateService(db)
+}
+
+func TestShowonceTestSuite(t *testing.T) {
+	test_suite.Run(t, new(ShowonceTestSuite))
+}
+
+func (suite *ShowonceTestSuite) TestFlow() {
 	item := &gen.NewItemRequest{
 		Title:      "title",
 		Group:      "group",
@@ -23,36 +43,32 @@ func TestRPC(t *testing.T) {
 		Expire:     "1",
 		ExpireUnit: "d",
 	}
-
-	user := "test"
-	empty := &emptypb.Empty{}
 	ctx := context.Background()
-	pub := app.NewPublicService(db)
-	priv := app.NewPrivateService(db)
-	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs("user", user))
-	id, err := priv.NewMessage(ctxMD, item)
-	assert.NoError(t, err, "SetMeta")
-	assert.NotNil(t, id, "SetMetaNotNil")
+	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs("user", suite.User))
 
-	meta, err := pub.GetMetadata(ctx, id)
-	assert.NoError(t, err, "GetMeta")
-	assert.Equal(t, item.Group, meta.Group, "GetMetaEq")
-	assert.Equal(t, user, meta.Owner, "GetMetaOwnerEq")
+	id, err := suite.Priv.NewItem(ctxMD, item)
+	suite.NoError(err, "NewItem")
+	suite.NotNil(id, "NewItem returns not nil")
 
-	stats, err := priv.GetStats(ctxMD, empty)
-	assert.NoError(t, err, "GetStats")
-	assert.Equal(t, int32(1), stats.My.Total, "My Items Total must be 1")
+	meta, err := suite.Pub.GetMetadata(ctx, id)
+	suite.NoError(err, "GetMeta")
+	suite.Equal(item.Group, meta.Group, "GetMetaGroupEq")
+	suite.Equal(suite.User, meta.Owner, "GetMetaOwnerEq")
 
-	items, err := priv.GetItems(ctxMD, empty)
-	assert.NoError(t, err, "GetItems")
-	assert.Equal(t, gen.ItemStatus_WAIT, items.Items[0].Meta.Status, "ItemsStatusIsWait")
+	stats, err := suite.Priv.GetStats(ctxMD, empty)
+	suite.NoError(err, "GetStats")
+	suite.Equal(int32(1), stats.My.Total, "My Items Total must be 1")
 
-	data, err := pub.GetData(ctx, id)
-	assert.NoError(t, err, "GetData")
-	assert.Equal(t, item.Data, data.Data, "GetDataEq")
+	items, err := suite.Priv.GetItems(ctxMD, empty)
+	suite.NoError(err, "GetItems")
+	suite.Equal(gen.ItemStatus_WAIT, items.Items[0].Meta.Status, "ItemStatusIsWait")
 
-	_, err = pub.GetData(ctx, id)
-	assert.ErrorIs(t, err, storage.ErrNotFound, "GetData2")
+	data, err := suite.Pub.GetData(ctx, id)
+	suite.NoError(err, "GetData")
+	suite.Equal(item.Data, data.Data, "GetDataEq")
+
+	_, err = suite.Pub.GetData(ctx, id)
+	suite.ErrorIs(err, storage.ErrNotFound, "GetDataIsEmpty")
 
 	/*
 	   sleep > dataTTL => no data
@@ -61,32 +77,43 @@ func TestRPC(t *testing.T) {
 	*/
 }
 
-/*
-tests := []struct {
-		isOk    bool
-		version string
-		repo    string
-		err     string
+func (suite *ShowonceTestSuite) TestExpire() {
+	item := &gen.NewItemRequest{
+		Title:      "title",
+		Group:      "group",
+		Data:       "data",
+		Expire:     "10",
+		ExpireUnit: "ms",
+	}
+	ctx := context.Background()
+	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs("user", suite.User))
+
+	id, err := suite.Priv.NewItem(ctxMD, item)
+	suite.NoError(err, "NewItem")
+	suite.NotNil(id, "NewItem returns not nil")
+
+	exp, _ := time.ParseDuration(item.Expire + item.ExpireUnit)
+	time.Sleep(exp)
+	meta, err := suite.Pub.GetMetadata(ctx, id)
+	suite.NoError(err, "GetItems")
+	suite.Equal(gen.ItemStatus_EXPIRED, meta.Status, "ItemStatusIsExpired")
+}
+
+func (suite *ShowonceTestSuite) TestAuthErrors() {
+	tests := []struct {
+		name string
+		md   metadata.MD
 	}{
-		{true, "v0.31", "https://github.com/LeKovr/dbrpc.git", ""},
-		{true, "v0.31", "git@github.com:LeKovr/dbrpc.git", ""},
-		{true, "any version is ok", "git@github.com:LeKovr/golang-use.git", ""},
-		{false, "v0.30", "https://github.com/LeKovr/dbrpc.git", "{\"level\":\"info\",\"v\":0,\"appVersion\":\"v0.30\",\"sourceVersion\":\"v0.31\",\"sourceUpdated\":\"2017-10-17T08:56:03Z\",\"sourceLink\":\" See https://github.com/LeKovr/dbrpc/releases/tag/v0.31\",\"message\":\"App version is outdated\"}\n"},
-		{false, "v0.0", "https://localhost:10", "Get \"https://localhost:10/releases.atom\": dial tcp 127.0.0.1:10: connect: connection refused"},
+		{"no metadata", nil},
+		{"no field 'user'", metadata.Pairs("UNKNOWN", suite.User)},
+		{"field 'user' is empty", metadata.Pairs("user", "")},
 	}
 	for _, tt := range tests {
-		buf := new(bytes.Buffer)
-		zl := zerolog.New(buf).Level(zerolog.InfoLevel)
-		var log logr.Logger = zerologr.New(&zl)
-		ok, err := ver.IsCheckOk(log, tt.repo, tt.version)
-		assert.Equal(t, tt.isOk, ok)
-		if !tt.isOk {
-			if err != nil {
-				assert.EqualError(t, err, tt.err)
-			} else {
-				assert.Equal(t, tt.err, buf.String())
-			}
+		ctx := context.Background()
+		if tt.md != nil {
+			ctx = metadata.NewIncomingContext(ctx, tt.md)
 		}
+		_, err := suite.Priv.GetStats(ctx, empty)
+		suite.ErrorIs(err, app.ErrMetadataMissing, tt.name)
 	}
 }
-*/
