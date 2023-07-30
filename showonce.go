@@ -6,14 +6,28 @@ package showonce
 import (
 	"context"
 
-	"github.com/LeKovr/showonce/storage"
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
 	"github.com/go-logr/logr"
+	"github.com/oklog/ulid/v2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
+
+// StorageIface makes users independent from storage implementation.
+type StorageIface interface {
+	// SetItem prepares and saves item metadata and secret.
+	SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID, error)
+	// GetMeta returns item metadata.
+	GetMeta(id string) (*gen.ItemMeta, error)
+	// GetData returns item data (secret).
+	GetData(id string) (*gen.ItemData, error)
+	// Items returns items, created by current user.
+	Items(owner string) (*gen.ItemList, error)
+	// Stats returns global and user's item counters.
+	Stats(owner string) (*gen.StatsResponse, error)
+}
 
 // ErrMetadataMissing means no user data found in request context.
 var ErrMetadataMissing = status.Errorf(codes.InvalidArgument, "no required metadata in rpc context")
@@ -21,11 +35,11 @@ var ErrMetadataMissing = status.Errorf(codes.InvalidArgument, "no required metad
 // PublicServiceImpl - реализация PublicService.
 type PublicServiceImpl struct {
 	gen.UnimplementedPublicServiceServer
-	Store storage.Iface
+	Store StorageIface
 }
 
 // NewPublicService - создать PublicService.
-func NewPublicService(db storage.Iface) *PublicServiceImpl {
+func NewPublicService(db StorageIface) *PublicServiceImpl {
 	return &PublicServiceImpl{Store: db}
 }
 
@@ -44,11 +58,11 @@ func (service PublicServiceImpl) GetData(_ context.Context, id *gen.ItemId) (*ge
 // PrivateServiceImpl - реадизация PrivateService.
 type PrivateServiceImpl struct {
 	gen.UnimplementedPrivateServiceServer
-	Store storage.Iface
+	Store StorageIface
 }
 
 // NewPrivateService - создать PrivateService.
-func NewPrivateService(db storage.Iface) *PrivateServiceImpl {
+func NewPrivateService(db StorageIface) *PrivateServiceImpl {
 	return &PrivateServiceImpl{Store: db}
 }
 
