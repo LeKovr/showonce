@@ -76,7 +76,8 @@ flowchart TD
   class so our;
 ```
 
-### Обозначения
+<details>
+  <summary>Обозначения</summary>
 
 ```mermaid
 flowchart LR
@@ -85,6 +86,8 @@ flowchart LR
   c[(Cache)]
   d[[External service]]
 ```
+
+</details>
 
 ### API
 
