@@ -78,14 +78,12 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  a[/Generated fom .proto/]
+  a[/Generated from .proto/]
   b>Showonce API]
   c[(Cache)]
 ```
 
 </div>
-
-![Data flow](arch.svg)
 
 ## Атрибуты текста
 
