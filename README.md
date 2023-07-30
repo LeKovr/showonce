@@ -95,6 +95,71 @@ flowchart LR
 
 Также доступен [JSON RPC](static/js/service.swagger.json)
 
+## Состав проекта
+
+Language|files|blank|comment|code
+:-------|-------:|-------:|-------:|-------:
+Go|9|116|115|672
+JavaScript|2|22|18|367
+YAML|11|39|84|357
+Markdown|2|179|0|306
+HTML|5|0|0|229
+make|1|76|79|163
+Protocol Buffers|1|18|20|116
+CSS|1|18|0|81
+Bourne Shell|1|14|11|53
+Dockerfile|1|9|0|21
+--------|--------|--------|--------|--------
+SUM:|34|491|327|2365
+
+## Аргументы сервиса
+
+```
+$ ./showonce -h
+Usage:
+  showonce [OPTIONS]
+
+Application Options:
+      --listen=               Addr and port which server listens at (default: :8080)
+      --listen_grpc=          Addr and port which GRPC pub server listens at (default: :8081)
+      --root=                 Static files root directory [$ROOT]
+      --priv=                 URI prefix for pages which requires auth (default: /my/)
+      --grace=                Stop grace period (default: 10s)
+
+Logging Options:
+      --log.debug             Show debug info
+      --log.dest=             Log destination (defailt: STDERR)
+
+Auth Service Options:
+      --as.my_url=            Own host URL (autodetect if empty)
+      --as.cb_url=            URL for Auth server's redirect (default: /login)
+      --as.type=[gitea|mmost] Authorization Server type (gitea|mmost) (default: gitea) [$AS_TYPE]
+      --as.do401              Do not redirect with http.StatusUnauthorized, process it [$AS_DO401]
+      --as.host=              Authorization Server host (default: http://gitea:8080) [$AS_HOST]
+      --as.team=              Authorization Server team which members has access to resource (default: dcape) [$AS_TEAM]
+      --as.client_id=         Authorization Server Client ID [$AS_CLIENT_ID]
+      --as.client_key=        Authorization Server Client key [$AS_CLIENT_KEY]
+      --as.cache_expire=      Cache expire interval (default: 5m)
+      --as.cache_cleanup=     Cache cleanup interval (default: 10m)
+      --as.auth_header=       Use token from this header if given (default: X-narra-token)
+      --as.cookie_domain=     Auth cookie domain
+      --as.cookie_name=       Auth cookie name (default: narra_token)
+      --as.cookie_sign=       Cookie sign key (32 or 64 bytes) [$AS_COOKIE_SIGN_KEY]
+      --as.cookie_crypt=      Cookie crypt key (16, 24, or 32 bytes) [$AS_COOKIE_CRYPT_KEY]
+      --as.user_header=       HTTP Response Header for username (default: X-Username) [$AS_USER_HEADER]
+      --as.basic_realm=       Basic Auth realm (default: narra)
+      --as.basic_username=    Basic Auth user name (default: token)
+      --as.basic_useragent=   UserAgent which requires Basic Auth (default: docker/)
+
+Storage Options:
+      --db.meta_ttl=          Metadata TTL (default: 240h)
+      --db.data_ttl=          Data TTL (default: 24h)
+      --db.cleanup=           Cleanup interval (default: 10m)
+
+Help Options:
+  -h, --help                  Show this help message
+```
+
 ## Алгоритм
 
 **Отправитель**
