@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/LeKovr/go-kit/config v0.2.1
 	github.com/LeKovr/go-kit/logger v0.2.2
+	github.com/LeKovr/go-kit/ver v0.1.0
 	github.com/dopos/narra v0.26.0
 	github.com/felixge/httpsnoop v1.0.3
 	github.com/go-logr/logr v1.2.4
@@ -39,6 +40,7 @@ require (
 	golang.org/x/oauth2 v0.10.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/tools v0.11.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230706204954-ccb25ca9f130 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230726155614-23370e0ffb3e // indirect

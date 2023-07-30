@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"github.com/LeKovr/go-kit/config"
-
 	"github.com/LeKovr/go-kit/logger"
+	"github.com/LeKovr/go-kit/ver"
 
 	// importing implementation.
 	app "github.com/LeKovr/showonce"
@@ -56,8 +56,13 @@ const (
 	application = "showonce"
 )
 
-// Actual main.version value will be set at build time.
-var version = "0.0-dev"
+var (
+	// App version, actual value will be set at build time.
+	version = "0.0-dev"
+
+	// Repository address, actual value will be set at build time.
+	repo = "repo.git"
+)
 
 // Run app and exit via given exitFunc.
 func Run(ctx context.Context, exitFunc func(code int)) {
@@ -70,6 +75,7 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	}
 	log := logger.New(cfg.Logger, nil)
 	log.Info(application, "version", version)
+	go ver.Check(log, repo, version)
 	ctx = logr.NewContext(ctx, log)
 	db := storage.New(cfg.Storage)
 
@@ -95,13 +101,13 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	// Private GRPC Service
 	// Доступен только через HTTP
 	// Авторизацию делает HTTP Handler
-	grpcPrivServer := grpc.NewServer(opts...) // TODO: UnaryInterceptor: md["user"]!=""
+	grpcPrivServer := grpc.NewServer(opts...) // TODO: UnaryInterceptor: md[app.MDUserKey]!=""
 	gen.RegisterPrivateServiceServer(grpcPrivServer, app.NewPrivateService(db))
 	mux := runtime.NewServeMux(
 		runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
 			userName := request.Header.Get(cfg.AuthServer.UserHeader)
-			log.Info("Got GRPC", "user", userName)
-			md := metadata.Pairs("user", userName)
+			log.Info("Got PrivGRPC", "user", userName)
+			md := metadata.Pairs(app.MDUserKey, userName)
 			return md
 		}),
 	)
