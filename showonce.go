@@ -29,6 +29,9 @@ type StorageIface interface {
 	Stats(owner string) (*gen.StatsResponse, error)
 }
 
+// MDUserKey holds GRPC metadata key for user name.
+const MDUserKey = "user"
+
 // ErrMetadataMissing means no user data found in request context.
 var ErrMetadataMissing = status.Errorf(codes.InvalidArgument, "no required metadata in rpc context")
 

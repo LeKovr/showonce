@@ -44,7 +44,7 @@ func (suite *ShowonceTestSuite) TestFlow() {
 		ExpireUnit: "d",
 	}
 	ctx := context.Background()
-	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs("user", suite.User))
+	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs(app.MDUserKey, suite.User))
 
 	id, err := suite.Priv.NewItem(ctxMD, item)
 	suite.NoError(err, "NewItem")
@@ -86,7 +86,7 @@ func (suite *ShowonceTestSuite) TestExpire() {
 		ExpireUnit: "ms",
 	}
 	ctx := context.Background()
-	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs("user", suite.User))
+	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs(app.MDUserKey, suite.User))
 
 	id, err := suite.Priv.NewItem(ctxMD, item)
 	suite.NoError(err, "NewItem")
@@ -106,7 +106,7 @@ func (suite *ShowonceTestSuite) TestAuthErrors() {
 	}{
 		{"no metadata", nil},
 		{"no field 'user'", metadata.Pairs("UNKNOWN", suite.User)},
-		{"field 'user' is empty", metadata.Pairs("user", "")},
+		{"field 'user' is empty", metadata.Pairs(app.MDUserKey, "")},
 	}
 	for _, tt := range tests {
 		ctx := context.Background()
