@@ -167,6 +167,11 @@ cov-total: coverage.out
 cov-clean:
 	rm -f coverage.*
 
+## count LoC without generated code
+cloc:
+	@cloc --md --fullpath --exclude-dir=zgen --not-match-f=./proto/README.md \
+	  --not-match-f=static/js/api.js --not-match-f=static/js/service.swagger.json  .
+
 ## Changes from last tag
 changelog:
 	@echo Changes since $(RELEASE)
