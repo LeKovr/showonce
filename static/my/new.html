@@ -6,6 +6,7 @@
     <link rel='shortcut icon' type='image/x-icon' href='/favicon.ico' />
     <script src="/js/api.js"></script>
     <script src="/js/showonce.js"></script>
+    <link rel="stylesheet" href="/chota.min.css">
     <link rel="stylesheet" type="text/css" href="/showonce.css">
     <title>ShowOnce - New secret</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -36,13 +37,16 @@
     <table class="wide">
       <tr><td>Title</td><td><input type="text" name="title" size="40" required placeholder="Secret description" /></td></tr>
       <tr><td>Group</td><td><input type="text" name="group" size="10" value="default"  /></td></tr>
-      <tr><td>Expire</td><td><input type="number" name="expire" min="1" max="9999" value="7" />
-        <select name="expire_unit">
+      <tr><td>Expire</td><td>
+        <div class="row">
+          <input type="number" name="expire" min="1" max="9999" value="7" class="col-2" />
+          <select name="expire_unit" class="col-2">
             <option value="d">day(s)</option>
             <option value="h">hour(s)</option>
             <option value="m">min</option>
             <option value="s">sec</option>
-        </select>
+          </select>
+        </div>
       </td></tr>
       <tr><td colspan="2" align="center">
         <textarea id="item_data" name="data" rows=10 placeholder="Secret text. Will be showed one time only"></textarea>

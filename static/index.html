@@ -6,6 +6,7 @@
     <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
     <script src="js/api.js"></script>
     <script src="js/showonce.js"></script>
+    <link rel="stylesheet" href="/chota.min.css">
     <link rel="stylesheet" type="text/css" href="/showonce.css">
     <title>ShowOnce. One-time secrets service</title>
   </head>
@@ -24,8 +25,18 @@
   </div>
 </div>
 <div class="content">
-  <form>
-    ID: <input type="text" id="id_input" name="id" size="40" /><input type="submit" /><br>
+  <form><br/>
+  <div class="row is-center">
+    <div class="col-1 is-right">
+      ID:
+    </div>
+    <div class="col-6">
+      <input type="text" id="id_input" name="id" size="40" />
+    </div>
+    <div class="col-3">
+      <input type="submit" class="button secondary"/>
+    </div>
+  </div>
   </form>
   <div id="meta" style="display:none">
     <h1>Secret</h1>
@@ -39,7 +50,7 @@
       <tr><td>Modified</td><td><input type="text" name="modifiedAt"size="40" disabled /></td></tr>
       <tr><td colspan="2" align="center">
         <div id="data_request" style="display:none">
-          <input type="button" value="Show" onclick="return showItemData();">
+          <input class="dark" type="button" value="Show" onclick="return showItemData();">
         </div>
         <div id="data_response" style="display:none">
           <textarea id="item_data" name="data" rows=10 disabled></textarea>
