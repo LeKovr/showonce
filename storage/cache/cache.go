@@ -43,8 +43,10 @@ func New(cfg Config) Storage {
 	data.OnEvicted(func(k, _ string) {
 		// Set metadata status when data expires
 		if item, ok := meta.Get(k); ok {
-			item.Status = gen.ItemStatus_EXPIRED
-			meta.Set(k, item)
+			if (item.Status == gen.ItemStatus_WAIT) {
+				item.Status = gen.ItemStatus_EXPIRED
+				meta.Set(k, item)
+			}
 		}
 	})
 	return Storage{Meta: meta, Data: data}

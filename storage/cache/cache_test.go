@@ -42,6 +42,10 @@ func TestFlow(t *testing.T) {
 	assert.NoError(t, err, "GetData")
 	assert.Equal(t, data.Data, item.Data, "GetDataEq")
 
+	meta, err = db.GetMeta(id.String())
+	assert.NoError(t, err, "GetMeta")
+	assert.Equal(t, meta.Status, gen.ItemStatus_READ,  "GetMetaEqRead")
+
 	_, err = db.GetData(id.String())
 	assert.ErrorIs(t, err, storage.ErrNotFound, "GetData2")
 
