@@ -103,7 +103,7 @@ endif
 ## Build app
 build: $(PRG_DEST)
 
-$(PRG_DEST): $(SOURCES)
+$(PRG_DEST): $(SOURCES) go.mod go.sum
 	GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
 	  $(GO) build -v -o $@ -ldflags \
 	 "${LDFLAGS}-X main.version=$(APP_VERSION) -X main.repo=$(REPO)" \
