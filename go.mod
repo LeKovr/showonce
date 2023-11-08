@@ -7,7 +7,7 @@ require (
 	github.com/LeKovr/go-kit/logger v0.2.2
 	github.com/LeKovr/go-kit/ver v0.1.0
 	github.com/dopos/narra v0.26.0
-	github.com/felixge/httpsnoop v1.0.3
+	github.com/felixge/httpsnoop v1.0.4
 	github.com/go-logr/logr v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0
 	github.com/oklog/ulid/v2 v2.1.0
