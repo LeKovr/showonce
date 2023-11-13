@@ -66,7 +66,7 @@ APP_PROTO     ?= http
 #- Auth service type
 AS_TYPE       ?= gitea
 #- Auth service URL
-AS_HOST       ?= https://git.vivo.sb
+AS_HOST       ?= https://git.dev.test
 #- Auth service org
 AS_TEAM       ?= dcape
 #- Auth service client_id
