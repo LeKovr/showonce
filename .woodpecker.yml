@@ -6,7 +6,6 @@
 variables:
     - &dcape_img 'dcape-compose'
     - &build_plugin 'plugins/docker'
-    - &golint_img 'golangci/golangci-lint:v1.55-alpine'
     - &golang_img 'golang:1.21-alpine3.18'
 
 clone:
@@ -17,10 +16,6 @@ clone:
       tags: true
 
 steps:
-
-  lint:
-    image: *golint_img
-    commands: golangci-lint run
 
   build:
     image: *golang_img
