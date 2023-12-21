@@ -1,15 +1,13 @@
 
 # lint this file
-# go run github.com/woodpecker-ci/woodpecker/cmd/cli lint
+# go get github.com/woodpecker-ci/woodpecker/cmd/cli
+# cli lint .woodpecker.yml
 
 variables:
-#    - &build_plugin 'woodpeckerci/plugin-docker-buildx'
+    - &dcape_img 'dcape-compose'
     - &build_plugin 'plugins/docker'
     - &golint_img 'golangci/golangci-lint:v1.53-alpine'
-    - &golang_img 'ghcr.io/dopos/golang-alpine:v1.19.7-alpine3.17.2'
-    - base_settings: &base_buildx_settings
-        registry: it.elfire.ru
-        repo: it.elfire.ru/${CI_REPO_OWNER}/${CI_REPO_NAME}
+    - &golang_img 'golang:1.21-alpine3.18'
 
 clone:
   git:
@@ -18,11 +16,7 @@ clone:
       lfs: false
       tags: true
 
-pipeline:
-
-  test:
-    image: *golang_img
-    commands: make test
+steps:
 
   lint:
     image: *golint_img
@@ -31,27 +25,32 @@ pipeline:
   build:
     image: *golang_img
     commands:
-      - make build-standalone
+      - apk add --no-cache curl git make jq bash openssl
+      - make test
+      - make showonce-static
 
   publish-dryrun:
     image: *build_plugin
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     settings:
-      <<: *base_buildx_settings
       dry_run: true
+      purge: true
+      tags: ["devel"]
+    when:
+      - event: push
 
-  publish:
-    image: *build_plugin
+  # Build, save and run docker image.
+  deploy:
+    image: *dcape_img
+    commands:
+      - export APP_VERSION=$(git describe --tags --always)
+      - export RELEASE=$(git describe --tags --abbrev=0 --always)
+      - export ENFIST_BRANCH=$CI_REPO_DEFAULT_BRANCH
+      - make .build
+      - make .default-deploy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    settings:
-      <<: *base_buildx_settings
-      auto_tag: true
-      custom_labels: org.opencontainers.image.version=${CI_COMMIT_TAG##v}
-      username: ${CI_REPO_OWNER}
-      password:
-        from_secret: cb_token
     when:
-      event: tag
-      ref: refs/tags/v*
+      - event: tag
+        ref: refs/tags/v*
