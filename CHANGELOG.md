@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * build(deps): bump github.com/felixge/httpsnoop from 1.0.3 to 1.0.4
 * build(deps): bump golang.org/x/sync from 0.4.0 to 0.5.0
-* build(deps): bump github.com/grpc-ecosystem/grpc-gateway/v2
 * build(deps): bump google.golang.org/grpc from 1.59.0 to 1.60.0
 * build(deps): bump github.com/dopos/narra from 0.26.0 to 0.26.1
 * build(deps): bump github.com/grpc-ecosystem/grpc-gateway/v2 to v2.18.1
