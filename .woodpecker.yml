@@ -23,6 +23,8 @@ steps:
       - apk add --no-cache curl git make jq bash openssl
       - make test
       - make showonce-static
+    when:
+      - event: push
 
   publish-dryrun:
     image: *build_plugin
