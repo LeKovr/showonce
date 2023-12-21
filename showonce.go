@@ -48,13 +48,13 @@ func NewPublicService(db StorageIface) *PublicServiceImpl {
 
 // GetMetadata - вернуть метаданные по id.
 func (service PublicServiceImpl) GetMetadata(_ context.Context, id *gen.ItemId) (*gen.ItemMeta, error) {
-	rv, err := service.Store.GetMeta(id.Id)
+	rv, err := service.Store.GetMeta(id.GetId())
 	return rv, err
 }
 
 // GetData -вернуть контент по id.
 func (service PublicServiceImpl) GetData(_ context.Context, id *gen.ItemId) (*gen.ItemData, error) {
-	rv, err := service.Store.GetData(id.Id)
+	rv, err := service.Store.GetData(id.GetId())
 	return rv, err
 }
 

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	ass "github.com/alecthomas/assert/v2"
 
 	"github.com/LeKovr/go-kit/config"
 	cmd "github.com/LeKovr/showonce/cmd/showonce"
@@ -37,7 +37,7 @@ func TestRunErrors(t *testing.T) {
 		os.Args = append([]string{a[0]}, tt.args...)
 		var c int
 		cmd.Run(ctx, func(code int) { c = code })
-		assert.Equal(t, tt.code, c, tt.name)
+		ass.Equal(t, tt.code, c, tt.name)
 	}
 
 	// Restore original args
@@ -56,7 +56,7 @@ func TestRun(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 	cmd.Run(ctx, func(code int) { c = code })
-	assert.Equal(t, config.ExitNormal, c, "Normal run")
+	ass.Equal(t, config.ExitNormal, c, "Normal run")
 	// Restore original args
 	os.Args = a
 }
@@ -65,9 +65,9 @@ func GetPorts(t *testing.T) []int {
 	t.Helper()
 	// Find ports
 	p1, err := GetFreePort()
-	assert.NoError(t, err, "Port")
+	ass.NoError(t, err, "Port")
 	p2, err := GetFreePort()
-	assert.NoError(t, err, "Port2")
+	ass.NoError(t, err, "Port2")
 	return []int{p1, p2}
 }
 

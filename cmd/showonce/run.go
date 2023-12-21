@@ -41,15 +41,15 @@ import (
 
 // Config holds all config vars.
 type Config struct {
-	Listen      string        `long:"listen" default:":8080" description:"Addr and port which server listens at"`
-	ListenGRPC  string        `long:"listen_grpc" default:":8081" description:"Addr and port which GRPC pub server listens at"`
-	Root        string        `long:"root" env:"ROOT" default:""  description:"Static files root directory"`
-	PrivPrefix  string        `long:"priv" default:"/my/" description:"URI prefix for pages which requires auth"`
-	GracePeriod time.Duration `long:"grace" default:"10s" description:"Stop grace period"`
+	Listen      string        `default:":8080" description:"Addr and port which server listens at"          long:"listen"`
+	ListenGRPC  string        `default:":8081" description:"Addr and port which GRPC pub server listens at" long:"listen_grpc"`
+	Root        string        `default:""      description:"Static files root directory"                    env:"ROOT"         long:"root"`
+	PrivPrefix  string        `default:"/my/"  description:"URI prefix for pages which requires auth"       long:"priv"`
+	GracePeriod time.Duration `default:"10s"   description:"Stop grace period"                              long:"grace"`
 
-	Logger     logger.Config  `group:"Logging Options" namespace:"log" env-namespace:"LOG"`
-	AuthServer narra.Config   `group:"Auth Service Options" namespace:"as" env-namespace:"AS"`
-	Storage    storage.Config `group:"Storage Options" namespace:"db" env-namespace:"DB"`
+	Logger     logger.Config  `env-namespace:"LOG" group:"Logging Options"      namespace:"log"`
+	AuthServer narra.Config   `env-namespace:"AS"  group:"Auth Service Options" namespace:"as"`
+	Storage    storage.Config `env-namespace:"DB"  group:"Storage Options"      namespace:"db"`
 }
 
 const (

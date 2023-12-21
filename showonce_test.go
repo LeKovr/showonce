@@ -47,28 +47,29 @@ func (suite *ShowonceTestSuite) TestFlow() {
 	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs(app.MDUserKey, suite.User))
 
 	id, err := suite.Priv.NewItem(ctxMD, item)
-	suite.NoError(err, "NewItem")
-	suite.NotNil(id, "NewItem returns not nil")
+	ass := suite.Require()
+	ass.NoError(err, "NewItem")
+	ass.NotNil(id, "NewItem returns not nil")
 
 	meta, err := suite.Pub.GetMetadata(ctx, id)
-	suite.NoError(err, "GetMeta")
-	suite.Equal(item.Group, meta.Group, "GetMetaGroupEq")
-	suite.Equal(suite.User, meta.Owner, "GetMetaOwnerEq")
+	ass.NoError(err, "GetMeta")
+	ass.Equal(item.GetGroup(), meta.GetGroup(), "GetMetaGroupEq")
+	ass.Equal(suite.User, meta.GetOwner(), "GetMetaOwnerEq")
 
 	stats, err := suite.Priv.GetStats(ctxMD, empty)
-	suite.NoError(err, "GetStats")
-	suite.Equal(int32(1), stats.My.Total, "My Items Total must be 1")
+	ass.NoError(err, "GetStats")
+	ass.Equal(int32(1), stats.GetMy().GetTotal(), "My Items Total must be 1")
 
 	items, err := suite.Priv.GetItems(ctxMD, empty)
-	suite.NoError(err, "GetItems")
-	suite.Equal(gen.ItemStatus_WAIT, items.Items[0].Meta.Status, "ItemStatusIsWait")
+	ass.NoError(err, "GetItems")
+	ass.Equal(gen.ItemStatus_WAIT, items.GetItems()[0].GetMeta().GetStatus(), "ItemStatusIsWait")
 
 	data, err := suite.Pub.GetData(ctx, id)
-	suite.NoError(err, "GetData")
-	suite.Equal(item.Data, data.Data, "GetDataEq")
+	ass.NoError(err, "GetData")
+	ass.Equal(item.GetData(), data.GetData(), "GetDataEq")
 
 	_, err = suite.Pub.GetData(ctx, id)
-	suite.ErrorIs(err, storage.ErrNotFound, "GetDataIsEmpty")
+	ass.ErrorIs(err, storage.ErrNotFound, "GetDataIsEmpty")
 
 	/*
 	   sleep > dataTTL => no data
@@ -87,16 +88,17 @@ func (suite *ShowonceTestSuite) TestExpire() {
 	}
 	ctx := context.Background()
 	ctxMD := metadata.NewIncomingContext(ctx, metadata.Pairs(app.MDUserKey, suite.User))
+	ass := suite.Require()
 
 	id, err := suite.Priv.NewItem(ctxMD, item)
-	suite.NoError(err, "NewItem")
-	suite.NotNil(id, "NewItem returns not nil")
+	ass.NoError(err, "NewItem")
+	ass.NotNil(id, "NewItem returns not nil")
 
-	exp, _ := time.ParseDuration(item.Expire + item.ExpireUnit)
+	exp, _ := time.ParseDuration(item.GetExpire() + item.GetExpireUnit())
 	time.Sleep(exp)
 	meta, err := suite.Pub.GetMetadata(ctx, id)
-	suite.NoError(err, "GetItems")
-	suite.Equal(gen.ItemStatus_EXPIRED, meta.Status, "ItemStatusIsExpired")
+	ass.NoError(err, "GetItems")
+	ass.Equal(gen.ItemStatus_EXPIRED, meta.GetStatus(), "ItemStatusIsExpired")
 }
 
 func (suite *ShowonceTestSuite) TestAuthErrors() {
@@ -114,6 +116,6 @@ func (suite *ShowonceTestSuite) TestAuthErrors() {
 			ctx = metadata.NewIncomingContext(ctx, tt.md)
 		}
 		_, err := suite.Priv.GetStats(ctx, empty)
-		suite.ErrorIs(err, app.ErrMetadataMissing, tt.name)
+		suite.Require().ErrorIs(err, app.ErrMetadataMissing, tt.name)
 	}
 }

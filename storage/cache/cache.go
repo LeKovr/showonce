@@ -16,9 +16,9 @@ import (
 
 // Config holds Storage Config.
 type Config struct {
-	MetaTTL         time.Duration `long:"meta_ttl" default:"240h" description:"Metadata TTL"`
-	DataTTL         time.Duration `long:"data_ttl" default:"24h" description:"Data TTL"`
-	CleanupInterval time.Duration `long:"cleanup" default:"10m" description:"Cleanup interval"`
+	MetaTTL         time.Duration `default:"240h" description:"Metadata TTL"     long:"meta_ttl"`
+	DataTTL         time.Duration `default:"24h"  description:"Data TTL"         long:"data_ttl"`
+	CleanupInterval time.Duration `default:"10m"  description:"Cleanup interval" long:"cleanup"`
 }
 
 // Storage implements data storage.
@@ -43,7 +43,7 @@ func New(cfg Config) Storage {
 	data.OnEvicted(func(k, _ string) {
 		// Set metadata status when data expires
 		if item, ok := meta.Get(k); ok {
-			if item.Status == gen.ItemStatus_WAIT {
+			if item.GetStatus() == gen.ItemStatus_WAIT {
 				item.Status = gen.ItemStatus_EXPIRED
 				meta.Set(k, item)
 			}
@@ -56,16 +56,16 @@ func New(cfg Config) Storage {
 func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID, error) {
 	// Validate expiration
 	var expire time.Duration
-	if req.Expire != "" {
-		if req.ExpireUnit == "d" {
-			days, err := strconv.Atoi(req.Expire)
+	if req.GetExpire() != "" {
+		if req.GetExpireUnit() == "d" {
+			days, err := strconv.Atoi(req.GetExpire())
 			if err != nil {
 				return nil, fmt.Errorf("expire days parse error: %w", err)
 			}
 			expire = time.Duration(days) * time.Hour * 24
 		} else {
 			var err error
-			expire, err = time.ParseDuration(fmt.Sprintf("%s%s", req.Expire, req.ExpireUnit))
+			expire, err = time.ParseDuration(fmt.Sprintf("%s%s", req.GetExpire(), req.GetExpireUnit()))
 			if err != nil {
 				return nil, fmt.Errorf("expire parse error: %w", err)
 			}
@@ -73,8 +73,8 @@ func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 	}
 	now := time.Now()
 	meta := gen.ItemMeta{
-		Title:      req.Title,
-		Group:      req.Group,
+		Title:      req.GetTitle(),
+		Group:      req.GetGroup(),
 		Owner:      owner,
 		CreatedAt:  timestamppb.New(now),
 		ModifiedAt: timestamppb.New(now.Add(expire)),
@@ -90,7 +90,7 @@ func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 			return nil, fmt.Errorf("ID generate error: %w", err)
 		}
 
-		err = store.Data.AddWithExpire(id.String(), req.Data, expire)
+		err = store.Data.AddWithExpire(id.String(), req.GetData(), expire)
 		if err == nil {
 			// data is unique
 			err = store.Meta.Add(id.String(), &meta)
@@ -138,11 +138,11 @@ func (store Storage) Items(owner string) (*gen.ItemList, error) {
 	items := &gen.ItemList{Items: []*gen.ItemMetaWithId{}}
 	for k, v := range cacheItems {
 		meta := v.Object
-		if meta.Owner != owner {
+		if meta.GetOwner() != owner {
 			continue
 		}
 		checkExpire(meta)
-		items.Items = append(items.Items, &gen.ItemMetaWithId{Id: k, Meta: meta})
+		items.Items = append(items.GetItems(), &gen.ItemMetaWithId{Id: k, Meta: meta})
 	}
 	return items, nil
 }
@@ -155,13 +155,13 @@ func (store Storage) Stats(owner string) (*gen.StatsResponse, error) {
 		meta := v.Object
 		checkExpire(meta)
 		var curr *gen.Stats
-		if meta.Owner == owner {
-			curr = stat.My
+		if meta.GetOwner() == owner {
+			curr = stat.GetMy()
 		} else {
-			curr = stat.Other
+			curr = stat.GetOther()
 		}
 		curr.Total++
-		switch meta.Status {
+		switch meta.GetStatus() {
 		case gen.ItemStatus_WAIT:
 			curr.Wait++
 		case gen.ItemStatus_READ:
@@ -175,7 +175,7 @@ func (store Storage) Stats(owner string) (*gen.StatsResponse, error) {
 
 // TODO: replace with OnEvicted.
 func checkExpire(meta *gen.ItemMeta) {
-	if meta.Status == gen.ItemStatus_WAIT && time.Now().After(meta.ModifiedAt.AsTime()) {
+	if meta.GetStatus() == gen.ItemStatus_WAIT && time.Now().After(meta.GetModifiedAt().AsTime()) {
 		// Data expired already
 		meta.Status = gen.ItemStatus_EXPIRED
 	}
