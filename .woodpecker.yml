@@ -22,7 +22,7 @@ steps:
     commands:
       - apk add --no-cache curl git make jq bash openssl
       - make test
-      - make showonce-static
+      - make -f Makefile.golang build PRG_DEST=app-static
     when:
       - event: push
 
