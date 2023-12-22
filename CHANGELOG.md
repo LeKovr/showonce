@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.7] - 2023-12-23
+
+### Changed
+
+* add: calc app version on static pages
+* fix: static build
+
 ## [1.0.6] - 2023-12-22
 
 ### Changed
