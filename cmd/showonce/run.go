@@ -47,6 +47,9 @@ type Config struct {
 	PrivPrefix  string        `default:"/my/"  description:"URI prefix for pages which requires auth"       long:"priv"`
 	GracePeriod time.Duration `default:"10s"   description:"Stop grace period"                              long:"grace"`
 
+	VersionPrefix string `long:"ver_prefix" default:"/js/version.js" description:"URL for version response"`
+	VersionFormat string `long:"ver_format" default:"document.addEventListener('DOMContentLoaded', () => { appVersion.innerHTML = '%s'; });\n" description:"Format string for version response"`
+
 	Logger     logger.Config  `env-namespace:"LOG" group:"Logging Options"      namespace:"log"`
 	AuthServer narra.Config   `env-namespace:"AS"  group:"Auth Service Options" namespace:"as"`
 	Storage    storage.Config `env-namespace:"DB"  group:"Storage Options"      namespace:"db"`
@@ -117,6 +120,14 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	fileServer := http.FileServer(hfs)
 	muxHTTP := http.NewServeMux()
 	muxHTTP.Handle("/", fileServer)
+
+	muxHTTP.HandleFunc(cfg.VersionPrefix, func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/javascript")
+		_, err := fmt.Fprintf(w, cfg.VersionFormat, version)
+		if err != nil {
+			log.Error(err, "Verion response")
+		}
+	})
 
 	// Setup OAuth
 	cfg.AuthServer.Do401 = true // we need redirect instead status 401
