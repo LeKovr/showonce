@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0] - 2024-01-02
+
+### Changed
+
+* move to [go-kit/server](https://github.com/LeKovr/go-kit/tree/main/server), [go-kit/slogger](https://github.com/LeKovr/go-kit/tree/main/slogger)
+* fix test script
+* move static files to subdir
+
 ## [1.0.7] - 2023-12-23
 
 ### Changed
