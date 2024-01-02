@@ -8,7 +8,7 @@ import (
 )
 
 func TestNewEmbed(t *testing.T) {
-	got, err := static.New("")
+	got, err := static.New("html/")
 	ass.NotZero(t, got, "FS not nil")
 	ass.NoError(t, err, "New success")
 	f, err := got.Open("index.html")
@@ -18,7 +18,7 @@ func TestNewEmbed(t *testing.T) {
 }
 
 func TestNewReal(t *testing.T) {
-	got, err := static.New("js")
+	got, err := static.New("html/js")
 	ass.NotZero(t, got, "FS not nil")
 	ass.NoError(t, err, "New success")
 	f, err := got.Open("service.swagger.json")
