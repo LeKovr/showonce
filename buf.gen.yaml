@@ -36,7 +36,7 @@ plugins:
     opt:
       - paths=source_relative
   - name: openapiv2
-    out: static/js
+    out: static/html/js
     opt:
       - output_format=json
       - allow_merge=true

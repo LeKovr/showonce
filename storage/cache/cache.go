@@ -3,11 +3,12 @@ package cache
 
 import (
 	crand "crypto/rand"
-	"errors"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"time"
 
+	storerr "github.com/LeKovr/showonce/storage"
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
 	"github.com/oklog/ulid/v2"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -23,18 +24,10 @@ type Config struct {
 
 // Storage implements data storage.
 type Storage struct {
-	Meta *zcache.Cache[string, *gen.ItemMeta]
-	Data *zcache.Cache[string, string]
+	Meta    *zcache.Cache[string, *gen.ItemMeta]
+	Data    *zcache.Cache[string, string]
+	DataTTL time.Duration
 }
-
-var (
-	// ErrNoUniqueWithinLimit means we cant find unique ID within given time period.
-	ErrNoUniqueWithinLimit = errors.New("cannot create unique id")
-	// ErrNotFound means we have no data gor given ID.
-	ErrNotFound = errors.New("item not found")
-	// ErrDataCorrupted means we cannot fetch data from cache.
-	ErrDataCorrupted = errors.New("item data was corrupted")
-)
 
 // New returns new Storage object.
 func New(cfg Config) Storage {
@@ -49,7 +42,7 @@ func New(cfg Config) Storage {
 			}
 		}
 	})
-	return Storage{Meta: meta, Data: data}
+	return Storage{Meta: meta, Data: data, DataTTL: cfg.DataTTL}
 }
 
 // SetItem prepares and saves item metadata and secret.
@@ -70,6 +63,8 @@ func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 				return nil, fmt.Errorf("expire parse error: %w", err)
 			}
 		}
+	} else {
+		expire = store.DataTTL
 	}
 	now := time.Now()
 	meta := gen.ItemMeta{
@@ -93,18 +88,19 @@ func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 		err = store.Data.AddWithExpire(id.String(), req.GetData(), expire)
 		if err == nil {
 			// data is unique
+			slog.Debug("New item", "exire", expire)
 			err = store.Meta.Add(id.String(), &meta)
 			return &id, err
 		}
 	}
-	return nil, ErrNoUniqueWithinLimit
+	return nil, storerr.ErrNoUniqueWithinLimit
 }
 
 // GetMeta returns item metadata.
 func (store Storage) GetMeta(id string) (*gen.ItemMeta, error) {
 	meta, ok := store.Meta.Get(id)
 	if !ok {
-		return nil, ErrNotFound
+		return nil, storerr.ErrNotFound
 	}
 	checkExpire(meta)
 	return meta, nil
@@ -114,7 +110,7 @@ func (store Storage) GetMeta(id string) (*gen.ItemMeta, error) {
 func (store Storage) GetData(id string) (*gen.ItemData, error) {
 	data, ok := store.Data.Get(id)
 	if !ok {
-		return nil, ErrNotFound
+		return nil, storerr.ErrNotFound
 	}
 	meta, err := store.GetMeta(id)
 	if err != nil {

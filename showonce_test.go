@@ -5,11 +5,14 @@ import (
 	"testing"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
+
 	app "github.com/LeKovr/showonce"
 	storage "github.com/LeKovr/showonce/storage/cache"
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
 	test_suite "github.com/stretchr/testify/suite"
-	"google.golang.org/grpc/metadata"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -69,7 +72,9 @@ func (suite *ShowonceTestSuite) TestFlow() {
 	ass.Equal(item.GetData(), data.GetData(), "GetDataEq")
 
 	_, err = suite.Pub.GetData(ctx, id)
-	ass.ErrorIs(err, storage.ErrNotFound, "GetDataIsEmpty")
+	e, ok := status.FromError(err)
+	ass.True(ok, "Error is GRPC error")
+	ass.Equal(codes.NotFound, e.Code(), "GetDataIsEmpty")
 
 	/*
 	   sleep > dataTTL => no data
@@ -110,12 +115,15 @@ func (suite *ShowonceTestSuite) TestAuthErrors() {
 		{"no field 'user'", metadata.Pairs("UNKNOWN", suite.User)},
 		{"field 'user' is empty", metadata.Pairs(app.MDUserKey, "")},
 	}
+	ass := suite.Require()
 	for _, tt := range tests {
 		ctx := context.Background()
 		if tt.md != nil {
 			ctx = metadata.NewIncomingContext(ctx, tt.md)
 		}
 		_, err := suite.Priv.GetStats(ctx, empty)
-		suite.Require().ErrorIs(err, app.ErrMetadataMissing, tt.name)
+		e, ok := status.FromError(err)
+		ass.True(ok, "Error is GRPC error")
+		ass.Equal(codes.PermissionDenied, e.Code(), tt.name)
 	}
 }

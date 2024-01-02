@@ -3,6 +3,7 @@ package cache_test
 import (
 	"testing"
 
+	storerr "github.com/LeKovr/showonce/storage"
 	storage "github.com/LeKovr/showonce/storage/cache"
 	gen "github.com/LeKovr/showonce/zgen/go/proto"
 	ass "github.com/alecthomas/assert/v2"
@@ -47,7 +48,7 @@ func TestFlow(t *testing.T) {
 	ass.Equal(t, meta.GetStatus(), gen.ItemStatus_READ, "GetMetaEqRead")
 
 	_, err = db.GetData(id.String())
-	ass.IsError(t, err, storage.ErrNotFound, "GetData2")
+	ass.IsError(t, err, storerr.ErrNotFound, "GetData2")
 
 	/*
 	   sleep > dataTTL => no data

@@ -5,14 +5,17 @@ package showonce
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 
-	gen "github.com/LeKovr/showonce/zgen/go/proto"
-	"github.com/go-logr/logr"
 	"github.com/oklog/ulid/v2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+
+	storerr "github.com/LeKovr/showonce/storage"
+	gen "github.com/LeKovr/showonce/zgen/go/proto"
 )
 
 // StorageIface makes users independent from storage implementation.
@@ -49,12 +52,18 @@ func NewPublicService(db StorageIface) *PublicServiceImpl {
 // GetMetadata - вернуть метаданные по id.
 func (service PublicServiceImpl) GetMetadata(_ context.Context, id *gen.ItemId) (*gen.ItemMeta, error) {
 	rv, err := service.Store.GetMeta(id.GetId())
+	if err != nil && errors.Is(err, storerr.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
 	return rv, err
 }
 
 // GetData -вернуть контент по id.
 func (service PublicServiceImpl) GetData(_ context.Context, id *gen.ItemId) (*gen.ItemData, error) {
 	rv, err := service.Store.GetData(id.GetId())
+	if err != nil && errors.Is(err, storerr.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
 	return rv, err
 }
 
@@ -78,8 +87,7 @@ func (service PrivateServiceImpl) NewItem(ctx context.Context, req *gen.NewItemR
 
 	idStr, err := service.Store.SetItem(*user, req)
 	if err != nil {
-		log := logr.FromContextOrDiscard(ctx)
-		log.Error(err, "NewItemError")
+		slog.Error("NewItemError", "error", err)
 		return nil, err
 	}
 	return &gen.ItemId{Id: idStr.String()}, nil
@@ -97,8 +105,7 @@ func (service PrivateServiceImpl) GetItems(ctx context.Context, _ *emptypb.Empty
 
 // GetStats - общая статистика (всего/активных текстов, макс дата активного текста).
 func (service PrivateServiceImpl) GetStats(ctx context.Context, _ *emptypb.Empty) (*gen.StatsResponse, error) {
-	log := logr.FromContextOrDiscard(ctx)
-	log.Info("GetStats")
+	slog.Info("GetStats")
 	user, err := fetchUser(ctx)
 	if err != nil {
 		return nil, err
@@ -111,16 +118,15 @@ func (service PrivateServiceImpl) GetStats(ctx context.Context, _ *emptypb.Empty
 func fetchUser(ctx context.Context) (*string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, ErrMetadataMissing
+		return nil, status.Error(codes.PermissionDenied, ErrMetadataMissing.Error())
 	}
 	// Fetch Username
 	users, ok := md["user"]
-	log := logr.FromContextOrDiscard(ctx)
 	if !ok || len(users) == 0 || users[0] == "" {
-		log.Info("Username must be set")
-		return nil, ErrMetadataMissing
+		slog.Info("Username must be set")
+		return nil, status.Error(codes.PermissionDenied, ErrMetadataMissing.Error())
 	}
 	user := users[0]
-	log.Info("USER", "name", user)
+	slog.Info("USER", "name", user)
 	return &user, nil
 }

@@ -4,55 +4,49 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"io/fs"
+	"log/slog"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
 	"regexp"
 	"strings"
-	"syscall"
-	"time"
 
 	"github.com/LeKovr/go-kit/config"
-	"github.com/LeKovr/go-kit/logger"
+	"github.com/LeKovr/go-kit/server"
+	"github.com/LeKovr/go-kit/slogger"
 	"github.com/LeKovr/go-kit/ver"
 
-	// importing implementation.
-	app "github.com/LeKovr/showonce"
-	// importing storage implementation.
-	"github.com/LeKovr/showonce/static"
-	storage "github.com/LeKovr/showonce/storage/cache"
-
-	// importing generated stubs.
-	gen "github.com/LeKovr/showonce/zgen/go/proto"
 	"github.com/dopos/narra"
-	"github.com/felixge/httpsnoop"
-	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/soheilhy/cmux"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
+
+	// importing implementation.
+	app "github.com/LeKovr/showonce"
+	// importing static files.
+	"github.com/LeKovr/showonce/static"
+	// importing storage implementation.
+	storage "github.com/LeKovr/showonce/storage/cache"
+	// importing generated stubs.
+	gen "github.com/LeKovr/showonce/zgen/go/proto"
 )
 
 // Config holds all config vars.
 type Config struct {
-	Listen      string        `default:":8080" description:"Addr and port which server listens at"          long:"listen"`
-	ListenGRPC  string        `default:":8081" description:"Addr and port which GRPC pub server listens at" long:"listen_grpc"`
-	Root        string        `default:""      description:"Static files root directory"                    env:"ROOT"         long:"root"`
-	PrivPrefix  string        `default:"/my/"  description:"URI prefix for pages which requires auth"       long:"priv"`
-	GracePeriod time.Duration `default:"10s"   description:"Stop grace period"                              long:"grace"`
+	Listen     string `default:":8080" description:"Addr and port which server listens at"          long:"listen"`
+	ListenGRPC string `default:":8081" description:"Addr and port which GRPC pub server listens at" long:"listen_grpc"`
+	Root       string `default:""      description:"Static files root directory"                    env:"ROOT"         long:"root"`
+	HTMLPath   string `default:"html"  description:"Static site subdirectory"                       long:"html"`
+	PrivPrefix string `default:"/my/"  description:"URI prefix for pages which requires auth"       long:"priv"`
 
-	VersionPrefix string `long:"ver_prefix" default:"/js/version.js" description:"URL for version response"`
-	VersionFormat string `long:"ver_format" default:"document.addEventListener('DOMContentLoaded', () => { appVersion.innerHTML = '%s'; });\n" description:"Format string for version response"`
-
-	Logger     logger.Config  `env-namespace:"LOG" group:"Logging Options"      namespace:"log"`
+	Logger     slogger.Config `env-namespace:"LOG" group:"Logging Options"      namespace:"log"`
 	AuthServer narra.Config   `env-namespace:"AS"  group:"Auth Service Options" namespace:"as"`
 	Storage    storage.Config `env-namespace:"DB"  group:"Storage Options"      namespace:"db"`
+	Server     server.Config  `env-namespace:"SRV" group:"Server Options"       namespace:"srv"`
 }
 
 const (
@@ -72,19 +66,26 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	// Load config
 	var cfg Config
 	err := config.Open(&cfg)
-	defer func() { config.Close(err, exitFunc) }()
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("Recovered panic", "err", r)
+		}
+		config.Close(err, exitFunc)
+	}()
 	if err != nil {
 		return
 	}
-	log := logger.New(cfg.Logger, nil)
-	log.Info(application, "version", version)
-	go ver.Check(log, repo, version)
-	ctx = logr.NewContext(ctx, log)
+	err = slogger.Setup(cfg.Logger, nil)
+	if err != nil {
+		return
+	}
+	slog.Info(application, "version", version)
+	go ver.Check(repo, version)
 	db := storage.New(cfg.Storage)
 
 	Interceptor := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		// Inject logger.
-		return handler(logr.NewContext(ctx, log), req)
+		return handler(ctx, req)
 	}
 
 	opts := []grpc.ServerOption{
@@ -109,36 +110,38 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	mux := runtime.NewServeMux(
 		runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
 			userName := request.Header.Get(cfg.AuthServer.UserHeader)
-			log.Info("Got PrivGRPC", "user", userName)
+			slog.Info("Got PrivGRPC", "user", userName)
+			/*
+				   	type key string
+				   	const myCustomKey key = "key"
+				   	func f(ctx context.Context) {
+				       ctx = context.WithValue(ctx, myCustomKey, "foo")
+					}
+			*/
+
 			md := metadata.Pairs(app.MDUserKey, userName)
 			return md
 		}),
 	)
 
 	// static pages server
-	hfs, _ := static.New(cfg.Root)
-	fileServer := http.FileServer(hfs)
-	muxHTTP := http.NewServeMux()
-	muxHTTP.Handle("/", fileServer)
-
-	muxHTTP.HandleFunc(cfg.VersionPrefix, func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "text/javascript")
-		_, err := fmt.Fprintf(w, cfg.VersionFormat, version)
-		if err != nil {
-			log.Error(err, "Verion response")
-		}
-	})
+	var root, hfs fs.FS
+	if root, err = static.New(cfg.Root); err != nil {
+		return
+	}
+	if hfs, err = fs.Sub(root, cfg.HTMLPath); err != nil {
+		return
+	}
+	srv := server.New(cfg.Server).WithStatic(hfs).WithVersion(version)
 
 	// Setup OAuth
 	cfg.AuthServer.Do401 = true // we need redirect instead status 401
 	auth := narra.New(&cfg.AuthServer)
-	auth.SetupRoutes(muxHTTP, cfg.PrivPrefix)
+	auth.SetupRoutes(srv.ServeMux(), cfg.PrivPrefix)
 	re := regexp.MustCompile("^" + cfg.PrivPrefix)
-	hh := auth.ProtectMiddleware(withGW(mux, muxPub, muxHTTP), re)
-
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	defer stop()
-
+	srv.Use(func(handler http.Handler) http.Handler {
+		return auth.ProtectMiddleware(withGW(mux, muxPub, srv.ServeMux()), re)
+	})
 	err = gen.RegisterPublicServiceHandlerFromEndpoint(ctx, muxPub, cfg.ListenGRPC, dialOpts)
 	if err != nil {
 		return
@@ -147,17 +150,6 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	err = gen.RegisterPrivateServiceHandlerFromEndpoint(ctx, mux, clientAddr, dialOpts)
 	if err != nil {
 		return
-	}
-	// Creating a normal HTTP server
-	srv := &http.Server{
-		Addr:    cfg.Listen,
-		Handler: withReqLogger(hh),
-		BaseContext: func(_ net.Listener) context.Context {
-			return ctx
-		},
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
 	}
 
 	// creating a listener for GRPC server
@@ -181,44 +173,28 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	// a different listener for HTTP2 since gRPC uses HTTP2
 	grpcL := m.Match(cmux.HTTP2())
 
-	// start servers
-	g, gCtx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		return srv.Serve(httpL)
-	})
-	g.Go(func() error {
-		return grpcPrivServer.Serve(grpcL)
-	})
-	g.Go(func() error {
-		log.V(1).Info("Start GRPC service", "addr", cfg.ListenGRPC)
-		return grpcPubServer.Serve(listenerPub)
-	})
-	g.Go(func() error {
-		log.V(1).Info("Start HTTP service", "addr", cfg.Listen)
-		return m.Serve()
-	})
-	g.Go(func() error {
-		<-gCtx.Done()
-		log.V(1).Info("Shutdown")
-		stop()
-		timedCtx, cancel := context.WithTimeout(ctx, cfg.GracePeriod)
-		defer cancel()
-		grpcPrivServer.GracefulStop()
-		grpcPubServer.GracefulStop()
-		return srv.Shutdown(timedCtx)
-	})
-	if er := g.Wait(); er != nil && !errors.Is(er, net.ErrClosed) {
-		err = er
-	}
-	log.Info("Exit")
-}
+	srv.Use(cfg.Server.WithAccessLog)
+	srv.WithListener(httpL)
+	srv.WithShutdown(
+		func(_ context.Context) error {
+			grpcPrivServer.GracefulStop()
+			grpcPubServer.GracefulStop()
+			return nil
+		})
 
-// withReqLogger prints HTTP request log.
-func withReqLogger(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		m := httpsnoop.CaptureMetrics(handler, writer, request)
-		fmt.Printf("http[%d]-- %s -- %s\n", m.Code, m.Duration, request.RequestURI)
-	})
+	err = srv.Run(ctx,
+		func(_ context.Context) error {
+			return grpcPrivServer.Serve(grpcL)
+		},
+		func(_ context.Context) error {
+			slog.Info("Start GRPC service", "addr", cfg.ListenGRPC)
+			return grpcPubServer.Serve(listenerPub)
+		},
+		func(_ context.Context) error {
+			slog.Info("Start HTTP service", "addr", cfg.Listen)
+			return m.Serve()
+		},
+	)
 }
 
 func withGW(gwmux, gwmuxPub *runtime.ServeMux, handler http.Handler) http.Handler {
@@ -243,33 +219,3 @@ func chooseClientAddr(addr string) string {
 	}
 	return addr
 }
-
-/*
-
-type JAST interface {
-  SetField(name string, value interface{}) error
-  SetFields(name string, values []interface{}) error
-}
-
-func Setup(options ..Option) (JAST, error) {
-}
-
-main() {
-
-app := jast.Setup(cfg).
-  Logger(log).
-  UseHTTP(true).
-  GRPC("/app",pubService).
-  GRPC("/my/app",privService).
-  Static(openapi).
-  Static(openapiUI)
-//...
-err = app.Serve()
-
-
-)
-  if err == nil {
-    app.Run(exitFunc)
-  }
-}
-*/

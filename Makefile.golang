@@ -12,7 +12,6 @@ APP_VERSION   ?= $(shell git describe --tags --always)
 # Last project tag (used in `make changelog`)
 RELEASE       ?= $(shell git describe --tags --abbrev=0 --always)
 # Repository address (compiled into main.repo)
-REPO          ?= $(CI_REPO_CLONE_URL)
 REPO          ?= $(shell git config --get remote.origin.url)
 
 GO            ?= go
@@ -47,7 +46,7 @@ build: $(PRG_DEST)
 $(PRG_DEST): $(SOURCES) go.mod
 	@GOOS=$${TARGETOS} GOARCH=$${TARGETARCH} CGO_ENABLED=$(CGO_ENABLED) \
 	  $(GO) build -v -o $@ -ldflags \
-	 "$${LDFLAGS} -X main.version=$(APP_VERSION) -X main.repo=$${REPO:-none}" \
+	 "$${LDFLAGS} -X main.version=$(APP_VERSION) -X main.repo=$${REPO}" \
 	 ./cmd/$(PRG)
 
 ## Build & run app
