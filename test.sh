@@ -10,12 +10,12 @@
 ACCEPT="Accept: application/json"
 CT=""
 #"Content-Type: application/json"
-
+DEBUG=${DEBUG:-}
 GITEA_TOKEN=$1
 echo $GITEA_TOKEN
 TOKEN="X-narra-token: $GITEA_TOKEN"
 
-[[ "$API_HOST" ]] || API_HOST=http://showonce.dev.lan:8080
+[[ "$API_HOST" ]] || API_HOST=http://shon.dev.test:8002
 
 # mux.HandleFunc("/my/api/new", srv.ItemCreate)
 do_create() {
@@ -23,14 +23,15 @@ do_create() {
 {
     "title":"Message title",
     "group":"default",
-    "exp":"90",
-    "exp_unit": "s",
+    "expire":"90",
+    "expire_unit": "s",
     "data":"secret"
 }
 EOF
 )
 action="/my/api/new"
 id=$(curl -gs -H "$ACCEPT" -H "$CT" -H "$TOKEN" -d "$DATA" ${API_HOST}$action)
+[ -z $DEBUG ] || echo "RESP: $id" >&2
 echo $id
 }
 
@@ -45,7 +46,7 @@ do_item() {
 do_data() {
     local id=$1
     action="/api/item"
-    curl -gs -H "$ACCEPT" -H "$CT" -d "" ${API_HOST}$action?id=$id
+    curl -gs -H "$ACCEPT" -H "$CT" -d "" ${API_HOST}$action/$id
 }
 
 # mux.HandleFunc("/my/api/items", srv.Items)
@@ -62,17 +63,18 @@ do_stat() {
   echo $rv
 }
 
-do_stat
+do_stat | jq -r .
 
-id=$(do_create | jq -r .)
+id=$(do_create | jq -r .id)
 echo ">>ID: $id"
 [[ "$id" ]] || exit
 
 do_item $id | jq -r .
 do_data $id | jq -r .
+
 echo "---- now is empty"
 do_item $id | jq -r .
-do_data $id 
+do_data $id | jq -r .
 
 do_items | jq -r .
 do_stat | jq -r .
