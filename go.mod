@@ -3,7 +3,7 @@ module github.com/LeKovr/showonce
 go 1.21.3
 
 require (
-	github.com/LeKovr/go-kit/config v0.2.1
+	github.com/LeKovr/go-kit/config v0.2.2
 	github.com/LeKovr/go-kit/server v0.12.24
 	github.com/LeKovr/go-kit/slogger v0.12.24
 	github.com/LeKovr/go-kit/ver v0.10.0
