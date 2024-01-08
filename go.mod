@@ -9,11 +9,11 @@ require (
 	github.com/LeKovr/go-kit/ver v0.10.0
 	github.com/alecthomas/assert/v2 v2.4.1
 	github.com/dopos/narra v0.26.3
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.1
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.8.4
-	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17
+	google.golang.org/genproto/googleapis/api v0.0.0-20240102182953-50ed04b92917
 	google.golang.org/grpc v1.60.1
 	google.golang.org/protobuf v1.32.0
 	zgo.at/zcache/v2 v2.1.0
@@ -46,8 +46,8 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.11.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/genproto v0.0.0-20231030173426-d783a09b4405 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231030173426-d783a09b4405 // indirect
+	google.golang.org/genproto v0.0.0-20231212172506-995d672761c0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240102182953-50ed04b92917 // indirect
 	gopkg.in/gorilla/securecookie.v1 v1.1.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
