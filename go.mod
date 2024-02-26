@@ -7,7 +7,7 @@ require (
 	github.com/LeKovr/go-kit/server v0.12.24
 	github.com/LeKovr/go-kit/slogger v0.12.24
 	github.com/LeKovr/go-kit/ver v0.10.0
-	github.com/alecthomas/assert/v2 v2.5.0
+	github.com/alecthomas/assert/v2 v2.6.0
 	github.com/dopos/narra v0.26.3
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/oklog/ulid/v2 v2.1.0
@@ -20,7 +20,7 @@ require (
 )
 
 require (
-	github.com/alecthomas/repr v0.3.0 // indirect
+	github.com/alecthomas/repr v0.4.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-http-utils/etag v0.0.0-20161124023236-513ea8f21eb1 // indirect
