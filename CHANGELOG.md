@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.1] - 2024-03-21
+
+### Changed
+
+* add robots.txt
+* js deps fix: Inclusion of functionality from an untrusted source
+* build(deps): bump google.golang.org/protobuf from 1.32.0 to 1.33.0
+* build(deps): bump github.com/stretchr/testify from 1.8.4 to 1.9.0
+* build(deps): bump github.com/alecthomas/assert/v2 from 2.5.0 to 2.6.0
+* build(deps): bump google.golang.org/grpc from 1.61.0 to 1.62.1
+* bump go-kit/config v0.2.2
+
 ## [1.1.0] - 2024-01-02
 
 ### Changed
