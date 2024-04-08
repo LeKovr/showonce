@@ -5,7 +5,7 @@ go 1.21.3
 require (
 	github.com/LeKovr/go-kit/config v0.2.2
 	github.com/LeKovr/go-kit/server v0.12.24
-	github.com/LeKovr/go-kit/slogger v0.12.24
+	github.com/LeKovr/go-kit/slogger v0.12.25
 	github.com/LeKovr/go-kit/ver v0.10.0
 	github.com/alecthomas/assert/v2 v2.8.0
 	github.com/dopos/narra v0.26.3
@@ -34,7 +34,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lmittmann/tint v1.0.3 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
