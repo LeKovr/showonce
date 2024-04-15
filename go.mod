@@ -4,7 +4,7 @@ go 1.21.3
 
 require (
 	github.com/LeKovr/go-kit/config v0.2.2
-	github.com/LeKovr/go-kit/server v0.12.24
+	github.com/LeKovr/go-kit/server v0.13.0
 	github.com/LeKovr/go-kit/slogger v0.12.25
 	github.com/LeKovr/go-kit/ver v0.10.0
 	github.com/alecthomas/assert/v2 v2.8.0
