@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.2] - 2024-05-15
+
+### Bump build(deps)
+
+* github.com/LeKovr/go-kit/server v0.12.24 -> v0.13.0
+* github.com/LeKovr/go-kit/slogger v0.12.24 -> v0.13.0
+* google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe -> v0.0.0-20240227224415-6ceb2ff114de
+* google.golang.org/grpc v1.62.1 -> v1.63.2
+* google.golang.org/protobuf v1.33.0 -> v1.34.1
+
 ## [1.1.1] - 2024-03-21
 
 ### Changed
