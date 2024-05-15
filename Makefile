@@ -33,8 +33,6 @@ LISTEN        ?= :8080
 #- Public GRPC service addr:port
 LISTEN_GRPC   ?= :8081
 
-# app url prefix
-APP_PROTO     ?= http
 
 #- Auth service type
 AS_TYPE       ?= gitea
@@ -52,6 +50,14 @@ AS_COOKIE_SIGN_KEY   ?= $(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; ech
 #- Auth service cookie crypt key
 AS_COOKIE_CRYPT_KEY  ?= $(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; echo)
 
+# used in URL generation
+ifeq ($(USE_TLS),false)
+#- app url prefix
+HTTP_PROTO ?= http
+else
+HTTP_PROTO ?= https
+endif
+
 # ------------------------------------------------------------------------------
 -include $(CFG).bak
 -include $(CFG)
@@ -66,6 +72,7 @@ DCAPE_ROOT    ?= $(shell docker inspect -f "{{.Config.Labels.dcape_root}}" $(DCA
 ifeq ($(shell test -e $(DCAPE_ROOT)/Makefile.app && echo -n yes),yes)
   include $(DCAPE_ROOT)/Makefile.app
 endif
+
 
 .PHONY: buildall dist clean docker docker-multi use-own-hub godoc ghcr
 
