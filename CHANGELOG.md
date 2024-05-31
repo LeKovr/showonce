@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.3] - 2024-06-01
+
+### Changed
+
+* go 1.22.3
+* closes #29, add HTTP_PROTO to .env
+* build(deps): bump github.com/alecthomas/assert/v2 from 2.9.0 to 2.10.0
+* build(deps): bump github.com/grpc-ecosystem/grpc-gateway/v2 to v2.20.0
+
 ## [1.1.2] - 2024-05-15
 
 ### Bump build(deps)
