@@ -1,6 +1,6 @@
 module github.com/LeKovr/showonce
 
-go 1.21.3
+go 1.22.3
 
 require (
 	github.com/LeKovr/go-kit/config v0.2.2

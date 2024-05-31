@@ -14,8 +14,9 @@ RELEASE       ?= $(shell git describe --tags --abbrev=0 --always)
 # Repository address (compiled into main.repo)
 REPO          ?= $(shell git config --get remote.origin.url)
 
-GO            ?= go
-GOLANG_VERSION = v1.19.7-alpine3.17.2
+GO             ?= go
+GOLANG_IMAGE   ?= ghcr.io/dopos/golang-alpine
+GOLANG_VERSION ?= v1.22.3-alpine3.20
 
 TARGETOS      ?= linux
 TARGETARCH    ?= amd64

@@ -1,5 +1,5 @@
-ARG GOLANG_IMAGE=golang
-ARG GOLANG_VERSION=1.21-alpine3.18
+ARG GOLANG_IMAGE=ghcr.io/dopos/golang-alpine
+ARG GOLANG_VERSION=v1.22.3-alpine3.20
 ARG APP=showonce
 
 FROM --platform=$BUILDPLATFORM ${GOLANG_IMAGE}:${GOLANG_VERSION} as build
