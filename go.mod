@@ -7,7 +7,7 @@ require (
 	github.com/LeKovr/go-kit/server v0.14.0
 	github.com/LeKovr/go-kit/slogger v0.14.0
 	github.com/LeKovr/go-kit/ver v0.10.0
-	github.com/alecthomas/assert/v2 v2.10.0
+	github.com/alecthomas/assert/v2 v2.11.0
 	github.com/dopos/narra v0.26.3
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
 	github.com/oklog/ulid/v2 v2.1.0
