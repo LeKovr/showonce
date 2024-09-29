@@ -83,7 +83,7 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	go ver.Check(repo, version)
 	db := storage.New(cfg.Storage)
 
-	Interceptor := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	Interceptor := func(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		// Inject logger.
 		return handler(ctx, req)
 	}
@@ -108,7 +108,7 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	grpcPrivServer := grpc.NewServer(opts...) // TODO: UnaryInterceptor: md[app.MDUserKey]!=""
 	gen.RegisterPrivateServiceServer(grpcPrivServer, app.NewPrivateService(db))
 	mux := runtime.NewServeMux(
-		runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
+		runtime.WithMetadata(func(_ context.Context, request *http.Request) metadata.MD {
 			userName := request.Header.Get(cfg.AuthServer.UserHeader)
 			slog.Info("Got PrivGRPC", "user", userName)
 			/*
