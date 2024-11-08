@@ -1,7 +1,5 @@
-# custom app config
-# overrides DCAPE/apps/drone/dcape-app/docker-compose.yml
-
-version: '2'
+# This file will be joined with docker-compose.app.yml from dcape
+# See https://github.com/dopos/dcape
 
 services:
   app:
