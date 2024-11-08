@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.5] - 2024-11-08
+
+* add: confirmation dialog
+* fix: increase bottom padding
+* upd: bump deps
+
 ## [1.1.4] - 2024-06-01
 
 * update golang-ci version
