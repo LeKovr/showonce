@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
-    <script src="js/api.js"></script>
-    <script src="js/showonce.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/showonce.js"></script>
     <script src="/js/version.js"></script>
     <link rel="stylesheet" href="/chota.min.css">
     <link rel="stylesheet" type="text/css" href="/showonce.css">
@@ -41,6 +41,19 @@
   </form>
   <div id="meta" style="display:none">
     <h1>Secret</h1>
+
+<dialog id="confirm" style="height: 30vh;">
+ <div style="overflow: auto; height: 24vh;" autofocus class="card">
+  <header>
+    <h4 class="bg-error">Attention!</h4>
+  </header>
+  <p>This secret will not be shown again, it can only be viewed once.</p>
+  <footer class="is-right">
+    <a class="button text-error" onclick="return acceptConfirm();">I understand</a>
+    <a class="button" onclick="return hideConfirm();">Show later</a>
+  </footer>
+</div>
+</dialog>
     <form id="metaform">
     <table class="wide">
       <tr><td>Title</td><td><input type="text" name="title" size="40" disabled /></td></tr>
@@ -51,8 +64,12 @@
       <tr><td>Modified</td><td><input type="text" name="modifiedAt"size="40" disabled /></td></tr>
       <tr><td colspan="2" align="center">
         <div id="data_request" style="display:none">
-          <input class="dark" type="button" value="Show" onclick="return showItemData();">
+          <input class="dark" type="button" value="Show one-time secret" onclick="return showConfirm();">
         </div>
+
+
+
+
         <div id="data_response" style="display:none">
           <textarea id="item_data" name="data" rows=10 disabled></textarea>
         </div>

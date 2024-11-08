@@ -49,6 +49,21 @@ function showItemData() {
   );
 }
 
+function showConfirm() {
+  document.getElementById('confirm').showModal();
+//  document.getElementById('confirm').style.display = 'initial';
+}
+
+function acceptConfirm() {
+  hideConfirm();
+  showItemData();
+}
+
+function hideConfirm() {
+  document.getElementById('confirm').close(false);
+//  document.getElementById('confirm').style.display = 'none';
+}
+
 function sendForm(form, path) {
   var div  = document.getElementById("log"),
       xhr  = new XMLHttpRequest(),
