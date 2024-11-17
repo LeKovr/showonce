@@ -1,10 +1,11 @@
 # Run tests on every push for extra branches
-name: GoTestExtra
+name: GoSec
 
 on:
   push:
     branches-ignore:
       - 'dependabot/**'
+    branches:
       - master
       - main
   pull_request:
