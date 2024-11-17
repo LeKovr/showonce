@@ -29,6 +29,8 @@ type Storage struct {
 	DataTTL time.Duration
 }
 
+const hoursInDay = 24
+
 // New returns new Storage object.
 func New(cfg Config) Storage {
 	meta := zcache.New[string, *gen.ItemMeta](cfg.MetaTTL, cfg.CleanupInterval)
@@ -55,7 +57,7 @@ func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 			if err != nil {
 				return nil, fmt.Errorf("expire days parse error: %w", err)
 			}
-			expire = time.Duration(days) * time.Hour * 24
+			expire = time.Duration(days) * time.Hour * hoursInDay
 		} else {
 			var err error
 			expire, err = time.ParseDuration(fmt.Sprintf("%s%s", req.GetExpire(), req.GetExpireUnit()))
@@ -77,7 +79,7 @@ func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 	}
 	// TODO: meta exp = data exp + meta config
 
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		// try to get unique id
 		ms := ulid.Timestamp(time.Now())
 		id, err := ulid.New(ms, crand.Reader)

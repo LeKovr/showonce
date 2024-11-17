@@ -50,7 +50,8 @@ type Config struct {
 }
 
 const (
-	application = "showonce"
+	application   = "showonce"
+	addrPartCount = 2
 )
 
 var (
@@ -139,7 +140,7 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	auth := narra.New(&cfg.AuthServer)
 	auth.SetupRoutes(srv.ServeMux(), cfg.PrivPrefix)
 	re := regexp.MustCompile("^" + cfg.PrivPrefix)
-	srv.Use(func(handler http.Handler) http.Handler {
+	srv.Use(func(_ http.Handler) http.Handler {
 		return auth.ProtectMiddleware(withGW(mux, muxPub, srv.ServeMux()), re)
 	})
 	err = gen.RegisterPublicServiceHandlerFromEndpoint(ctx, muxPub, cfg.ListenGRPC, dialOpts)
@@ -213,7 +214,7 @@ func withGW(gwmux, gwmuxPub *runtime.ServeMux, handler http.Handler) http.Handle
 
 // chooseClientAddr chooses localhost if server listens any ip.
 func chooseClientAddr(addr string) string {
-	parts := strings.SplitN(addr, ":", 2)
+	parts := strings.SplitN(addr, ":", addrPartCount)
 	if parts[0] == "0.0.0.0" || parts[0] == "" {
 		return fmt.Sprintf("%s:%s", "localhost", parts[1])
 	}
