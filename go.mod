@@ -16,7 +16,7 @@ require (
 	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20241118233622-e639e219e697
-	google.golang.org/grpc v1.68.0
+	google.golang.org/grpc v1.69.2
 	google.golang.org/protobuf v1.35.2
 	zgo.at/zcache/v2 v2.1.0
 )
@@ -41,12 +41,12 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/remychantenay/slog-otel v1.3.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
-	go.opentelemetry.io/otel v1.24.0 // indirect
-	go.opentelemetry.io/otel/trace v1.24.0 // indirect
-	golang.org/x/net v0.29.0 // indirect
+	go.opentelemetry.io/otel v1.31.0 // indirect
+	go.opentelemetry.io/otel/trace v1.31.0 // indirect
+	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/oauth2 v0.24.0 // indirect
 	golang.org/x/sync v0.9.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241118233622-e639e219e697 // indirect
