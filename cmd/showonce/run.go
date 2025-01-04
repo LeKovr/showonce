@@ -37,6 +37,7 @@ import (
 
 // Config holds all config vars.
 type Config struct {
+	config.Config
 	Listen     string `default:":8080" description:"Addr and port which server listens at"          long:"listen"`
 	ListenGRPC string `default:":8081" description:"Addr and port which GRPC pub server listens at" long:"listen_grpc"`
 	Root       string `default:""      description:"Static files root directory"                    env:"ROOT"         long:"root"`
@@ -74,6 +75,9 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 		config.Close(err, exitFunc)
 	}()
 	if err != nil {
+		return
+	}
+	if err = cfg.VersionRequested(application, version); err != nil {
 		return
 	}
 	err = slogger.Setup(cfg.Logger, nil)
