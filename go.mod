@@ -1,6 +1,6 @@
 module github.com/LeKovr/showonce
 
-go 1.22.7
+go 1.22.3
 
 toolchain go1.23.2
 
