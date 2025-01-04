@@ -6,7 +6,7 @@
 variables:
     - &dcape_img 'dcape-compose'
     - &build_plugin 'plugins/docker'
-    - &golang_img 'golang:1.21-alpine3.18'
+    - &golang_img 'golang:1.22.3-alpine3.20'
 
 clone:
   git:
