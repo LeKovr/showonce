@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.6] - 2024-11-08
+
+* add: --version support
+* html linting
+* golang 1.22.3
+* golangci v1.60.3
+* upd: codeql v3
+* upd: activate gosec
+* upd: github workflows
+* fix: linter notices
+* fix: match FROM & AS case
+
+### Bump build(deps)
+
+* actions/checkout from 3 to 4
+* actions/setup-go from 3 to 5
+* docker/build-push-action from 4 to 6
+* docker/login-action from 2 to 3
+* docker/metadata-action from 4 to 5
+* docker/setup-buildx-action from 2 to 3
+* docker/setup-qemu-action from 2 to 3
+* github.com/dopos/narra from 0.26.4 to 0.26.6
+* github.com/grpc-ecosystem/grpc-gateway/v2
+* github.com/stretchr/testify from 1.9.0 to 1.10.0
+* google.golang.org/grpc from 1.67.1 to 1.68.0
+* google.golang.org/grpc from 1.68.0 to 1.69.2
+* google.golang.org/protobuf from 1.35.1 to 1.35.2
+* google.golang.org/protobuf from 1.35.2 to 1.36.1
+
 ## [1.1.5] - 2024-11-08
 
 * add: confirmation dialog
