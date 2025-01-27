@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.7] - 2025-01-27
+
+### Bump build(deps)
+
+* google.golang.org/protobuf from 1.36.1 to 1.36.4 (#87)
+* google.golang.org/grpc from 1.69.2 to 1.70.0 (#86)
+* github.com/grpc-ecosystem/grpc-gateway/v2 (#85)
+
 ## [1.1.6] - 2025-01-04
 
 * add: --version support
