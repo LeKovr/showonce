@@ -1,6 +1,5 @@
 run:
   timeout: 2m
-  skip-files: []
 
 linters-settings:
   govet:
@@ -82,7 +81,6 @@ linters:
 
 issues:
   exclude-use-default: false
-  max-per-linter: 0
   max-same-issues: 0
   exclude:
     - 'package-comments: should have a package comment'
