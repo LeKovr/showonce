@@ -53,7 +53,6 @@ linters-settings:
 linters:
   enable-all: true
   disable:
-    - execinquery # not relevant (SQL)
     - rowserrcheck # not relevant (SQL)
     - sqlclosecheck # not relevant (SQL)
     - cyclop # duplicate of gocyclo
@@ -64,7 +63,6 @@ linters:
     - gochecknoglobals
     - gochecknoinits
     - err113
-    - gomnd
     - gosec
     - lll
     - nilnil
@@ -80,6 +78,7 @@ linters:
     # temp: disputable rules
     - nestif
     - funlen
+    - tenv
 
 issues:
   exclude-use-default: false
