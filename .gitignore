@@ -4,3 +4,5 @@ showonce
 coverage.out
 buf.lock
 dist/
+coverage.*
+rspec.xml

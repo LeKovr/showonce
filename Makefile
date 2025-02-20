@@ -4,6 +4,7 @@
 
 SHELL          = /bin/sh
 CFG           ?= .env
+CFG_TMPL      ?= Makefile.env
 PRG           ?= $(shell basename $$PWD)
 
 # -----------------------------------------------------------------------------
@@ -27,28 +28,20 @@ IMAGE_VER     ?= latest
 # -----------------------------------------------------------------------------
 # App config
 
-#- Docker container addr:port
-LISTEN        ?= :8080
+-include $(CFG_TMPL)
 
-#- Public GRPC service addr:port
-LISTEN_GRPC   ?= :8081
-
-
-#- Auth service type
-AS_TYPE       ?= gitea
-#- Auth service URL
-AS_HOST       ?= https://git.dev.test
-#- Auth service org
-AS_TEAM       ?= dcape
-#- Auth service client_id
-AS_CLIENT_ID  ?= you_should_get_id_from_as
-#- Auth service client key
-AS_CLIENT_KEY ?= you_should_get_key_from_as
-
-#- Auth service cookie sign key
-AS_COOKIE_SIGN_KEY   ?= $(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; echo)
-#- Auth service cookie crypt key
-AS_COOKIE_CRYPT_KEY  ?= $(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; echo)
+ifeq ($(AS_CLIENT_ID),)
+  AS_CLIENT_ID = you_should_get_id_from_as
+endif
+ifeq ($(AS_CLIENT_KEY),)
+  AS_CLIENT_KEY = you_should_get_key_from_as
+endif
+ifeq ($(AS_COOKIE_SIGN_KEY),)
+  AS_COOKIE_SIGN_KEY = $(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; echo)
+endif
+ifeq ($(AS_COOKIE_CRYPT_KEY),)
+  AS_COOKIE_CRYPT_KEY  = $(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; echo)
+endif
 
 # used in URL generation
 ifeq ($(USE_TLS),false)

@@ -37,10 +37,10 @@ import (
 
 // Config holds all config vars.
 type Config struct {
-	config.Config
-	Listen     string `default:":8080" description:"Addr and port which server listens at"          long:"listen"`
-	ListenGRPC string `default:":8081" description:"Addr and port which GRPC pub server listens at" long:"listen_grpc"`
-	Root       string `default:""      description:"Static files root directory"                    env:"ROOT"         long:"root"`
+	Listen     string `default:":8080" description:"Addr and port which server listens at (srv_listen not used)" env:"LISTEN"      long:"listen"`
+	ListenGRPC string `default:":8081" description:"Addr and port which GRPC pub server listens at"              env:"LISTEN_GRPC" long:"listen_grpc"`
+	Root       string `default:""      description:"Static files root directory"                                 env:"ROOT"        long:"root"`
+
 	HTMLPath   string `default:"html"  description:"Static site subdirectory"                       long:"html"`
 	PrivPrefix string `default:"/my/"  description:"URI prefix for pages which requires auth"       long:"priv"`
 
@@ -48,6 +48,10 @@ type Config struct {
 	AuthServer narra.Config   `env-namespace:"AS"  group:"Auth Service Options" namespace:"as"`
 	Storage    storage.Config `env-namespace:"DB"  group:"Storage Options"      namespace:"db"`
 	Server     server.Config  `env-namespace:"SRV" group:"Server Options"       namespace:"srv"`
+
+	config.EnableShowVersion
+	config.EnableConfigDefGen
+	config.EnableConfigDump
 }
 
 const (
@@ -65,6 +69,7 @@ var (
 
 // Run app and exit via given exitFunc.
 func Run(ctx context.Context, exitFunc func(code int)) {
+	config.SetApplicationVersion(application, version)
 	// Load config
 	var cfg Config
 	err := config.Open(&cfg)
@@ -75,9 +80,6 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 		config.Close(err, exitFunc)
 	}()
 	if err != nil {
-		return
-	}
-	if err = cfg.VersionRequested(application, version); err != nil {
 		return
 	}
 	err = slogger.Setup(cfg.Logger, nil)

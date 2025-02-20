@@ -39,7 +39,7 @@ DOCKER_IMAGE  ?= ghcr.io/lekovr/$(PRG)
 #:
 
 ## Build app
-build: $(PRG_DEST)
+build: $(PRG_DEST) config.md
 
 # Use: make build PRG_DEST=app-static
 %-static: CGO_ENABLED=0
@@ -48,7 +48,8 @@ $(PRG_DEST): $(SOURCES) go.mod
 	@GOOS=$${TARGETOS} GOARCH=$${TARGETARCH} CGO_ENABLED=$(CGO_ENABLED) \
 	  $(GO) build -v -o $@ -ldflags \
 	 "$${LDFLAGS} -X main.version=$(APP_VERSION) -X main.repo=$${REPO}" \
-	 ./cmd/$(PRG)
+	 ./cmd/$(PRG) && \
+	 ./$(PRG) --config_gen=mk > $(CFG_TMPL) 2>/dev/null
 
 ## Build & run app
 run: $(PRG)
@@ -82,6 +83,9 @@ test: lint vet coverage.out
 test-race:
 	$(GO) test -tags test -race -covermode=atomic -coverprofile=$@ ./...
 
+test-ci:
+	@go run gotest.tools/gotestsum@v1.12.0 -f testdox --junitfile rspec.xml ./...
+
 # internal target
 coverage.out: $(SOURCES)
 	@#GIN_MODE=release $(GO) test -test.v -test.race -coverprofile=$@ -covermode=atomic ./...
@@ -99,6 +103,13 @@ cov-func: coverage.out
 cov-total: coverage.out
 	@$(GO) tool cover -func coverage.out | grep total: | awk '{print $$3}'
 
+coverage.xml: $(SOURCES)
+	@go test -tags test -coverprofile=coverage.txt -covermode count $(SOURCE_DIRS)
+	@go run github.com/boumenot/gocover-cobertura@v1.2.0 < coverage.txt > $@
+
+cov-ci: coverage.xml
+	@go tool cover -func coverage.txt
+
 ## Clean coverage report
 cov-clean:
 	rm -f coverage.*
@@ -114,6 +125,9 @@ clog:
 	@echo
 	@git log $(RELEASE)..@ --pretty=format:"* %s"
 
+## generate CLI options report
+config.md: $(PRG)
+	@./$(PRG) --config_gen=md > $@ 2>/dev/null || true
 
 # ------------------------------------------------------------------------------
 ## GRPC operations

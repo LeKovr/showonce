@@ -6,26 +6,36 @@ services:
     labels:
       - traefik.http.routers.${APP_TAG}.rule=Host(`${APP_SITE:?Must be set}`)
       - traefik.http.routers.${APP_TAG}.service=${APP_TAG}
-      - traefik.http.services.${APP_TAG}.loadbalancer.server.port=8080
+      - traefik.http.services.${APP_TAG}.loadbalancer.server.port=${LISTEN}
       # # Uncomment this to have GRPC outside
       # - traefik.http.services.${APP_TAG}-grpc.loadbalancer.server.scheme=h2c
-      # - traefik.http.services.${APP_TAG}-grpc.loadbalancer.server.port=8081
+      # - traefik.http.services.${APP_TAG}-grpc.loadbalancer.server.port=${LISTEN_GRPC}
       # - traefik.http.routers.${APP_TAG}-grpc.rule=Host(`grpc.${APP_SITE}`)
       # - traefik.http.routers.${APP_TAG}-grpc.tls=${USE_TLS}
       # - traefik.http.routers.${APP_TAG}-grpc.tls.certresolver=default
       # - traefik.http.routers.${APP_TAG}-grpc.service=${APP_TAG}-grpc
     command:
-      --log.debug --as.my_url ${HTTP_PROTO}://${APP_SITE} --as.cookie_name showonce_token --root /static
+      --as.my_url ${HTTP_PROTO}://${APP_SITE} --as.cookie_name showonce_token
     volumes:
       - ./static:/static
     environment:
+      - LISTEN
+      - LISTEN_GRPC
+      - ROOT
+      - LOG_DEBUG
+      - LOG_FORMAT
+      - LOG_TIME_FORMAT
+      - LOG_DEST
       - AS_TYPE
+      - AS_DO401
       - AS_HOST
       - AS_TEAM
       - AS_CLIENT_ID
       - AS_CLIENT_KEY
       - AS_COOKIE_SIGN_KEY
       - AS_COOKIE_CRYPT_KEY
+      - AS_USER_HEADER
+
     build:
       context: .
       args:
