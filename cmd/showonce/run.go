@@ -41,8 +41,8 @@ type Config struct {
 	ListenGRPC string `default:":8081" description:"Addr and port which GRPC pub server listens at"              env:"LISTEN_GRPC" long:"listen_grpc"`
 	Root       string `default:""      description:"Static files root directory"                                 env:"ROOT"        long:"root"`
 
-	HTMLPath   string `default:"html"  description:"Static site subdirectory"                       long:"html"`
-	PrivPrefix string `default:"/my/"  description:"URI prefix for pages which requires auth"       long:"priv"`
+	HTMLPath   string `default:"html" description:"Static site subdirectory"                 long:"html"`
+	PrivPrefix string `default:"/my/" description:"URI prefix for pages which requires auth" long:"priv"`
 
 	Logger     slogger.Config `env-namespace:"LOG" group:"Logging Options"      namespace:"log"`
 	AuthServer narra.Config   `env-namespace:"AS"  group:"Auth Service Options" namespace:"as"`
