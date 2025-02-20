@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.0] - 2025-02-21
+
+### Devops
+
+* use github.com/LeKovr/go-kit/config v0.5.1 (new config arch)
+* update linters
+
+### Bump build(deps)
+
+* google.golang.org/protobuf from 1.36.4 to 1.36.5 (#89)
+* github.com/grpc-ecosystem/grpc-gateway/v2 (#88)
+
 ## [1.1.7] - 2025-01-27
 
 ### Bump build(deps)
