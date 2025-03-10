@@ -1,16 +1,15 @@
 module github.com/LeKovr/showonce
 
 go 1.22.3
-
-toolchain go1.23.2
+toolchain go1.23.7
 
 require (
 	github.com/LeKovr/go-kit/config v0.5.1
 	github.com/LeKovr/go-kit/server v0.14.0
-	github.com/LeKovr/go-kit/slogger v0.14.1
+	github.com/LeKovr/go-kit/slogger v0.15.0
 	github.com/LeKovr/go-kit/ver v0.10.0
 	github.com/alecthomas/assert/v2 v2.11.0
-	github.com/dopos/narra v0.26.6
+	github.com/dopos/narra v0.27.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/soheilhy/cmux v0.1.5
@@ -28,7 +27,6 @@ require (
 	github.com/go-http-utils/etag v0.0.0-20161124023236-513ea8f21eb1 // indirect
 	github.com/go-http-utils/fresh v0.0.0-20161124030543-7231e26a4b27 // indirect
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a // indirect
-	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hexops/gotextdiff v1.0.3 // indirect
 	github.com/jessevdk/go-flags v1.5.0 // indirect
@@ -44,7 +42,7 @@ require (
 	go.opentelemetry.io/otel v1.32.0 // indirect
 	go.opentelemetry.io/otel/trace v1.32.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/oauth2 v0.26.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.22.0 // indirect

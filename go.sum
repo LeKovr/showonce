@@ -2,8 +2,8 @@ github.com/LeKovr/go-kit/config v0.5.1 h1:2bKdr8xQ0iDoguWSnCZPakbm2YQi1d9PnPRcuE
 github.com/LeKovr/go-kit/config v0.5.1/go.mod h1:/pwowGPoobH1dIf1j42II1DsVPaYWBBfLR2UZ4NnFDM=
 github.com/LeKovr/go-kit/server v0.14.0 h1:9RYLLPOKFeLFwcPL8GfGdefWn0W2NUhqr6UV2FwpX7Y=
 github.com/LeKovr/go-kit/server v0.14.0/go.mod h1:QWCjQKcMrOhkhF2Zlna5/J7185hlYHr+R7sqsTlfLzg=
-github.com/LeKovr/go-kit/slogger v0.14.1 h1:n0mXigxjCZQcCZpxN88aAh4nx0rkpO78yNQpnM/XMLc=
-github.com/LeKovr/go-kit/slogger v0.14.1/go.mod h1:Zx6vK4xr1MGpIFH6IaR6MvD04/tPJKrAn6Uszl76Rik=
+github.com/LeKovr/go-kit/slogger v0.15.0 h1:oirBGEtmCLN54qZ539M+JFCN9m+hOeO76urUwxm9/lk=
+github.com/LeKovr/go-kit/slogger v0.15.0/go.mod h1:Zx6vK4xr1MGpIFH6IaR6MvD04/tPJKrAn6Uszl76Rik=
 github.com/LeKovr/go-kit/ver v0.10.0 h1:jlPjDsWNv9K6ykWWzrrbalcmnO/FuH6IaIbz0enyJ2c=
 github.com/LeKovr/go-kit/ver v0.10.0/go.mod h1:HjT1wf3CIa7L2/rysCCVjkUaKKtQ/pVJsngKz54lNao=
 github.com/alecthomas/assert v1.0.0 h1:3XmGh/PSuLzDbK3W2gUbRXwgW5lqPkuqvRgeQ30FI5o=
@@ -18,8 +18,8 @@ github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ3
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dopos/narra v0.26.6 h1:GCJSvmFUt0qsNg7RddzOqy4BOhUmI/BQBlEzctvteQI=
-github.com/dopos/narra v0.26.6/go.mod h1:uo1LnQpQXUW0mBgwMoll/3jzgW9T671VdX8ES0ocWvQ=
+github.com/dopos/narra v0.27.1 h1:F1AtKxnVGpHwpudqbG1YfGALiSQyMBIyJJBQwABnrPU=
+github.com/dopos/narra v0.27.1/go.mod h1:KzC31VC0cqDdTQZ382CpVc80LZEfTyc0rGy8rsiH1LM=
 github.com/felixge/httpsnoop v1.0.4 h1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2Wg=
 github.com/felixge/httpsnoop v1.0.4/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/go-http-utils/etag v0.0.0-20161124023236-513ea8f21eb1 h1:zga7zaRE8HCbWjcXMDlfvmQtH0/kMVLo7cQ48dy6kWg=
@@ -92,8 +92,8 @@ golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3/go.mod h1:t9HGtf8HONx5eT2rtn
 golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb/go.mod h1:sp8m0HH+o8qH0wwXwYZr8TS3Oi6o0r6Gce1SSxlDquU=
 golang.org/x/net v0.33.0 h1:74SYHlV8BIgHIFC/LrYkOGIwL19eTYXQ5wc6TBuO36I=
 golang.org/x/net v0.33.0/go.mod h1:HXLR5J+9DxmrqMwG9qjGCxZ+zKXxBru04zlTvWlWuN4=
-golang.org/x/oauth2 v0.26.0 h1:afQXWNNaeC4nvZ0Ed9XvCCzXM6UHJG7iCg0W4fPqSBE=
-golang.org/x/oauth2 v0.26.0/go.mod h1:XYTD2NtWslqkgxebSiOHnXEap4TF09sJSc7H1sXbhtI=
+golang.org/x/oauth2 v0.27.0 h1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=
+golang.org/x/oauth2 v0.27.0/go.mod h1:onh5ek6nERTohokkhCD/y2cV4Do3fxFHFuAejCkRWT8=
 golang.org/x/sync v0.11.0 h1:GGz8+XQP4FvTTrjZPzNKTMFtSXH80RAzG+5ghFPgK9w=
 golang.org/x/sync v0.11.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
