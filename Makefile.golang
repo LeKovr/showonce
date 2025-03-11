@@ -2,6 +2,7 @@ SHELL          = /bin/sh
 CFG           ?= .env
 PRG           ?= $(shell basename $$PWD)
 PRG_DEST      ?= $(PRG)
+CFG_TMPL      ?= Makefile.env
 
 # -----------------------------------------------------------------------------
 # Build config
@@ -16,7 +17,7 @@ REPO          ?= $(shell git config --get remote.origin.url)
 
 GO             ?= go
 GOLANG_IMAGE   ?= ghcr.io/dopos/golang-alpine
-GOLANG_VERSION ?= v1.22.3-alpine3.20
+GOLANG_VERSION ?= v1.23.6-alpine3.21.3
 
 TARGETOS      ?= linux
 TARGETARCH    ?= amd64
@@ -47,9 +48,9 @@ build: $(PRG_DEST) config.md
 $(PRG_DEST): $(SOURCES) go.mod
 	@GOOS=$${TARGETOS} GOARCH=$${TARGETARCH} CGO_ENABLED=$(CGO_ENABLED) \
 	  $(GO) build -v -o $@ -ldflags \
-	 "$${LDFLAGS} -X main.version=$(APP_VERSION) -X main.repo=$${REPO}" \
+	 "$${LDFLAGS} -X main.version=$(APP_VERSION) -X main.repo=$(REPO)" \
 	 ./cmd/$(PRG) && \
-	 ./$(PRG) --config_gen=mk > $(CFG_TMPL) 2>/dev/null
+	 ./$(PRG_DEST) --config_gen=mk > $(CFG_TMPL) 2>/dev/null
 
 ## Build & run app
 run: $(PRG)
@@ -126,8 +127,8 @@ clog:
 	@git log $(RELEASE)..@ --pretty=format:"* %s"
 
 ## generate CLI options report
-config.md: $(PRG)
-	@./$(PRG) --config_gen=md > $@ 2>/dev/null || true
+config.md: $(PRG_DEST)
+	@./$(PRG_DEST) --config_gen=md > $@ 2>/dev/null || true
 
 # ------------------------------------------------------------------------------
 ## GRPC operations

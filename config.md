@@ -3,7 +3,7 @@
 
 | Name | ENV | Type | Default | Description |
 |------|-----|------|---------|-------------|
-| listen               | LISTEN               | string | :8080 | Addr and port which server listens at |
+| listen               | LISTEN               | string | :8080 | Addr and port which server listens at (srv_listen not used) |
 | listen_grpc          | LISTEN_GRPC          | string | :8081 | Addr and port which GRPC pub server listens at |
 | root                 | ROOT                 | string | - | Static files root directory |
 | html                 | -                    | string | html | Static site subdirectory |
@@ -27,7 +27,6 @@
 |------|-----|------|---------|-------------|
 | as.my_url            | -                    | string | - | Own host URL (autodetect if empty) |
 | as.cb_url            | -                    | string | /login | URL for Auth server's redirect |
-| as.type              | AS_TYPE              | gitea,mmost | gitea | Authorization Server type (gitea|mmost) |
 | as.do401             | AS_DO401             | bool | false | Do not redirect with http.StatusUnauthorized, process it |
 | as.host              | AS_HOST              | string | http://gitea:8080 | Authorization Server host |
 | as.team              | AS_TEAM              | string | dcape | Authorization Server team which members has access to resource |
@@ -35,6 +34,7 @@
 | as.client_key        | AS_CLIENT_KEY        | string | - | Authorization Server Client key |
 | as.cache_expire      | -                    | Duration | 5m | Cache expire interval |
 | as.cache_cleanup     | -                    | Duration | 10m | Cache cleanup interval |
+| as.client_timeout    | -                    | Duration | 10s | HTTP Client timeout |
 | as.auth_header       | -                    | string | X-narra-token | Use token from this header if given |
 | as.cookie_domain     | -                    | string | - | Auth cookie domain |
 | as.cookie_name       | -                    | string | narra_token | Auth cookie name |
@@ -44,6 +44,16 @@
 | as.basic_realm       | -                    | string | narra | Basic Auth realm |
 | as.basic_username    | -                    | string | token | Basic Auth user name |
 | as.basic_useragent   | -                    | string | docker/ | UserAgent which requires Basic Auth |
+
+### Endpoint Options {#as.ep}
+
+| Name | ENV | Type | Default | Description |
+|------|-----|------|---------|-------------|
+| as.ep.auth           | -                    | string | /login/oauth/authorize | Auth URI |
+| as.ep.token          | -                    | string | /login/oauth/access_token | Token URI |
+| as.ep.user           | -                    | string | /api/v1/user | User info URI |
+| as.ep.teams          | -                    | string | /api/v1/user/orgs | User teams URI |
+| as.ep.team_name      | -                    | string | username | Teams response field name for team name |
 
 ### Storage Options {#db}
 
