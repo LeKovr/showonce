@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.1] - 2025-03-12
+
+* build for go 1.23.6
+* update go-kit/config v0.5.1 features
+* use github.com/dopos/narra v0.27.1
+* update other deps
+
 ## [1.2.0] - 2025-02-21
 
 ### Devops
