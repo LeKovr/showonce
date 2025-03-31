@@ -2,6 +2,8 @@ module github.com/LeKovr/showonce
 
 go 1.23.6
 
+toolchain go1.24.1
+
 require (
 	github.com/LeKovr/go-kit/config v0.5.1
 	github.com/LeKovr/go-kit/server v0.14.0
@@ -15,7 +17,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb
 	google.golang.org/grpc v1.71.0
-	google.golang.org/protobuf v1.36.5
+	google.golang.org/protobuf v1.36.6
 	zgo.at/zcache/v2 v2.1.0
 )
 
