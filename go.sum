@@ -2,8 +2,8 @@ github.com/LeKovr/go-kit/config v0.5.1 h1:2bKdr8xQ0iDoguWSnCZPakbm2YQi1d9PnPRcuE
 github.com/LeKovr/go-kit/config v0.5.1/go.mod h1:/pwowGPoobH1dIf1j42II1DsVPaYWBBfLR2UZ4NnFDM=
 github.com/LeKovr/go-kit/server v0.14.0 h1:9RYLLPOKFeLFwcPL8GfGdefWn0W2NUhqr6UV2FwpX7Y=
 github.com/LeKovr/go-kit/server v0.14.0/go.mod h1:QWCjQKcMrOhkhF2Zlna5/J7185hlYHr+R7sqsTlfLzg=
-github.com/LeKovr/go-kit/slogger v0.15.0 h1:oirBGEtmCLN54qZ539M+JFCN9m+hOeO76urUwxm9/lk=
-github.com/LeKovr/go-kit/slogger v0.15.0/go.mod h1:Zx6vK4xr1MGpIFH6IaR6MvD04/tPJKrAn6Uszl76Rik=
+github.com/LeKovr/go-kit/slogger v0.15.1 h1:4Iv+CInVSDHyFErt+xinhyAdpkWuxvByT0ufoi1AxtU=
+github.com/LeKovr/go-kit/slogger v0.15.1/go.mod h1:2PzWT1nI6wE+limLRwhQuPL1UOQ6G6beIoNkS5Y7gBQ=
 github.com/LeKovr/go-kit/ver v0.10.0 h1:jlPjDsWNv9K6ykWWzrrbalcmnO/FuH6IaIbz0enyJ2c=
 github.com/LeKovr/go-kit/ver v0.10.0/go.mod h1:HjT1wf3CIa7L2/rysCCVjkUaKKtQ/pVJsngKz54lNao=
 github.com/alecthomas/assert v1.0.0 h1:3XmGh/PSuLzDbK3W2gUbRXwgW5lqPkuqvRgeQ30FI5o=
