@@ -3,9 +3,9 @@ module github.com/LeKovr/showonce
 go 1.23.6
 
 require (
-	github.com/LeKovr/go-kit/config v0.5.1
-	github.com/LeKovr/go-kit/server v0.14.0
-	github.com/LeKovr/go-kit/slogger v0.15.0
+	github.com/LeKovr/go-kit/config v0.5.4
+	github.com/LeKovr/go-kit/server v0.15.2
+	github.com/LeKovr/go-kit/slogger v0.15.1
 	github.com/LeKovr/go-kit/ver v0.10.0
 	github.com/alecthomas/assert/v2 v2.11.0
 	github.com/dopos/narra v0.27.1
@@ -14,7 +14,7 @@ require (
 	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb
-	google.golang.org/grpc v1.71.1
+	google.golang.org/grpc v1.72.0
 	google.golang.org/protobuf v1.36.6
 	zgo.at/zcache/v2 v2.1.0
 )
@@ -28,7 +28,7 @@ require (
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hexops/gotextdiff v1.0.3 // indirect
-	github.com/jessevdk/go-flags v1.5.0 // indirect
+	github.com/jessevdk/go-flags v1.6.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lmittmann/tint v1.0.3 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
