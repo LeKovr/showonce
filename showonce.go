@@ -55,6 +55,7 @@ func (service PublicServiceImpl) GetMetadata(_ context.Context, id *gen.ItemId) 
 	if err != nil && errors.Is(err, storerr.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
+
 	return rv, err
 }
 
@@ -64,6 +65,7 @@ func (service PublicServiceImpl) GetData(_ context.Context, id *gen.ItemId) (*ge
 	if err != nil && errors.Is(err, storerr.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
+
 	return rv, err
 }
 
@@ -88,8 +90,10 @@ func (service PrivateServiceImpl) NewItem(ctx context.Context, req *gen.NewItemR
 	idStr, err := service.Store.SetItem(*user, req)
 	if err != nil {
 		slog.Error("NewItemError", "error", err)
+
 		return nil, err
 	}
+
 	return &gen.ItemId{Id: idStr.String()}, nil
 }
 
@@ -99,18 +103,23 @@ func (service PrivateServiceImpl) GetItems(ctx context.Context, _ *emptypb.Empty
 	if err != nil {
 		return nil, err
 	}
+
 	rv, err := service.Store.Items(*user)
+
 	return rv, err
 }
 
 // GetStats - общая статистика (всего/активных текстов, макс дата активного текста).
 func (service PrivateServiceImpl) GetStats(ctx context.Context, _ *emptypb.Empty) (*gen.StatsResponse, error) {
 	slog.Info("GetStats")
+
 	user, err := fetchUser(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	rv, err := service.Store.Stats(*user)
+
 	return rv, err
 }
 
@@ -124,9 +133,12 @@ func fetchUser(ctx context.Context) (*string, error) {
 	users, ok := md["user"]
 	if !ok || len(users) == 0 || users[0] == "" {
 		slog.Info("Username must be set")
+
 		return nil, status.Error(codes.PermissionDenied, ErrMetadataMissing.Error())
 	}
+
 	user := users[0]
 	slog.Info("USER", "name", user)
+
 	return &user, nil
 }

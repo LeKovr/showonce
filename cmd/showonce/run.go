@@ -1,3 +1,4 @@
+// Packahe main holds showonce service.
 package main
 
 // See also: https://blog.logrocket.com/guide-to-grpc-gateway/
@@ -16,7 +17,6 @@ import (
 	"github.com/LeKovr/go-kit/server"
 	"github.com/LeKovr/go-kit/slogger"
 	"github.com/LeKovr/go-kit/ver"
-
 	"github.com/dopos/narra"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/soheilhy/cmux"
@@ -73,21 +73,28 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	// Load config
 	var cfg Config
 	err := config.Open(&cfg)
+
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Error("Recovered panic", "err", r)
 		}
+
 		config.Close(err, exitFunc)
 	}()
+
 	if err != nil {
 		return
 	}
+
 	err = slogger.Setup(cfg.Logger, nil)
 	if err != nil {
 		return
 	}
+
 	slog.Info(application, "version", version)
+
 	go ver.Check(repo, version)
+
 	db := storage.New(cfg.Storage)
 
 	Interceptor := func(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -104,6 +111,7 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	grpcPubServer := grpc.NewServer(opts...)
 	gen.RegisterPublicServiceServer(grpcPubServer, app.NewPublicService(db))
 	reflection.Register(grpcPubServer)
+
 	muxPub := runtime.NewServeMux()
 	dialOpts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -114,6 +122,7 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	// Авторизацию делает HTTP Handler
 	grpcPrivServer := grpc.NewServer(opts...) // TODO: UnaryInterceptor: md[app.MDUserKey]!=""
 	gen.RegisterPrivateServiceServer(grpcPrivServer, app.NewPrivateService(db))
+
 	mux := runtime.NewServeMux(
 		runtime.WithMetadata(func(_ context.Context, request *http.Request) metadata.MD {
 			userName := request.Header.Get(cfg.AuthServer.UserHeader)
@@ -127,18 +136,22 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 			*/
 
 			md := metadata.Pairs(app.MDUserKey, userName)
+
 			return md
 		}),
 	)
 
 	// static pages server
 	var root, hfs fs.FS
+
 	if root, err = static.New(cfg.Root); err != nil {
 		return
 	}
+
 	if hfs, err = fs.Sub(root, cfg.HTMLPath); err != nil {
 		return
 	}
+
 	srv := server.New(cfg.Server).WithStatic(hfs).WithVersion(version)
 
 	// Setup OAuth
@@ -146,14 +159,18 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 	auth := narra.New(&cfg.AuthServer)
 	auth.SetupRoutes(srv.ServeMux(), cfg.PrivPrefix)
 	re := regexp.MustCompile("^" + cfg.PrivPrefix)
+
 	srv.Use(func(_ http.Handler) http.Handler {
 		return auth.ProtectMiddleware(withGW(mux, muxPub, srv.ServeMux()), re)
 	})
+
 	err = gen.RegisterPublicServiceHandlerFromEndpoint(ctx, muxPub, cfg.ListenGRPC, dialOpts)
 	if err != nil {
 		return
 	}
+
 	clientAddr := chooseClientAddr(cfg.Listen)
+
 	err = gen.RegisterPrivateServiceHandlerFromEndpoint(ctx, mux, clientAddr, dialOpts)
 	if err != nil {
 		return
@@ -161,6 +178,7 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 
 	// creating a listener for GRPC server
 	var listenerPub net.Listener
+
 	listenerPub, err = net.Listen("tcp", cfg.ListenGRPC)
 	if err != nil {
 		return
@@ -168,10 +186,12 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 
 	// creating a listener for HTTP server
 	var listener net.Listener
+
 	listener, err = net.Listen("tcp", cfg.Listen)
 	if err != nil {
 		return
 	}
+
 	m := cmux.New(listener)
 
 	// a different listener for HTTP1
@@ -186,6 +206,7 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 		func(_ context.Context) error {
 			grpcPrivServer.GracefulStop()
 			grpcPubServer.GracefulStop()
+
 			return nil
 		})
 
@@ -195,10 +216,12 @@ func Run(ctx context.Context, exitFunc func(code int)) {
 		},
 		func(_ context.Context) error {
 			slog.Info("Start GRPC service", "addr", cfg.ListenGRPC)
+
 			return grpcPubServer.Serve(listenerPub)
 		},
 		func(_ context.Context) error {
 			slog.Info("Start HTTP service", "addr", cfg.Listen)
+
 			return m.Serve()
 		},
 	)
@@ -208,12 +231,16 @@ func withGW(gwmux, gwmuxPub *runtime.ServeMux, handler http.Handler) http.Handle
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api") {
 			gwmuxPub.ServeHTTP(w, r)
+
 			return
 		}
+
 		if strings.HasPrefix(r.URL.Path, "/my/api") {
 			gwmux.ServeHTTP(w, r)
+
 			return
 		}
+
 		handler.ServeHTTP(w, r)
 	})
 }
@@ -224,5 +251,6 @@ func chooseClientAddr(addr string) string {
 	if parts[0] == "0.0.0.0" || parts[0] == "" {
 		return fmt.Sprintf("%s:%s", "localhost", parts[1])
 	}
+
 	return addr
 }

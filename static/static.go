@@ -20,5 +20,6 @@ func New(root string) (fs.FS, error) {
 		// take embedded fs
 		subtree = embedFS
 	}
+
 	return subtree, nil
 }

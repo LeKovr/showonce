@@ -8,11 +8,12 @@ import (
 	"strconv"
 	"time"
 
-	storerr "github.com/LeKovr/showonce/storage"
-	gen "github.com/LeKovr/showonce/zgen/go/proto"
 	"github.com/oklog/ulid/v2"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	zcache "zgo.at/zcache/v2"
+
+	storerr "github.com/LeKovr/showonce/storage"
+	gen "github.com/LeKovr/showonce/zgen/go/proto"
 )
 
 // Config holds Storage Config.
@@ -44,6 +45,7 @@ func New(cfg Config) Storage {
 			}
 		}
 	})
+
 	return Storage{Meta: meta, Data: data, DataTTL: cfg.DataTTL}
 }
 
@@ -51,15 +53,18 @@ func New(cfg Config) Storage {
 func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID, error) {
 	// Validate expiration
 	var expire time.Duration
+
 	if req.GetExpire() != "" {
 		if req.GetExpireUnit() == "d" {
 			days, err := strconv.Atoi(req.GetExpire())
 			if err != nil {
 				return nil, fmt.Errorf("expire days parse error: %w", err)
 			}
+
 			expire = time.Duration(days) * time.Hour * hoursInDay
 		} else {
 			var err error
+
 			expire, err = time.ParseDuration(fmt.Sprintf("%s%s", req.GetExpire(), req.GetExpireUnit()))
 			if err != nil {
 				return nil, fmt.Errorf("expire parse error: %w", err)
@@ -68,6 +73,7 @@ func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 	} else {
 		expire = store.DataTTL
 	}
+
 	now := time.Now()
 	meta := gen.ItemMeta{
 		Title:      req.GetTitle(),
@@ -82,6 +88,7 @@ func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 	for range 5 {
 		// try to get unique id
 		ms := ulid.Timestamp(time.Now())
+
 		id, err := ulid.New(ms, crand.Reader)
 		if err != nil {
 			return nil, fmt.Errorf("ID generate error: %w", err)
@@ -91,10 +98,13 @@ func (store Storage) SetItem(owner string, req *gen.NewItemRequest) (*ulid.ULID,
 		if err == nil {
 			// data is unique
 			slog.Debug("New item", "exire", expire)
+
 			err = store.Meta.Add(id.String(), &meta)
+
 			return &id, err
 		}
 	}
+
 	return nil, storerr.ErrNoUniqueWithinLimit
 }
 
@@ -104,7 +114,9 @@ func (store Storage) GetMeta(id string) (*gen.ItemMeta, error) {
 	if !ok {
 		return nil, storerr.ErrNotFound
 	}
+
 	checkExpire(meta)
+
 	return meta, nil
 }
 
@@ -114,10 +126,12 @@ func (store Storage) GetData(id string) (*gen.ItemData, error) {
 	if !ok {
 		return nil, storerr.ErrNotFound
 	}
+
 	meta, err := store.GetMeta(id)
 	if err != nil {
 		return nil, err
 	}
+
 	meta.Status = gen.ItemStatus_READ
 	meta.ModifiedAt = timestamppb.Now()
 
@@ -125,8 +139,10 @@ func (store Storage) GetData(id string) (*gen.ItemData, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	store.Data.Delete(id)
 	rv := gen.ItemData{Data: data}
+
 	return &rv, nil
 }
 
@@ -134,14 +150,17 @@ func (store Storage) GetData(id string) (*gen.ItemData, error) {
 func (store Storage) Items(owner string) (*gen.ItemList, error) {
 	cacheItems := store.Meta.Items()
 	items := &gen.ItemList{Items: []*gen.ItemMetaWithId{}}
+
 	for k, v := range cacheItems {
 		meta := v.Object
 		if meta.GetOwner() != owner {
 			continue
 		}
+
 		checkExpire(meta)
 		items.Items = append(items.GetItems(), &gen.ItemMetaWithId{Id: k, Meta: meta})
 	}
+
 	return items, nil
 }
 
@@ -149,16 +168,20 @@ func (store Storage) Items(owner string) (*gen.ItemList, error) {
 func (store Storage) Stats(owner string) (*gen.StatsResponse, error) {
 	cacheItems := store.Meta.Items()
 	stat := &gen.StatsResponse{My: &gen.Stats{}, Other: &gen.Stats{}}
+
 	for _, v := range cacheItems {
 		meta := v.Object
 		checkExpire(meta)
+
 		var curr *gen.Stats
 		if meta.GetOwner() == owner {
 			curr = stat.GetMy()
 		} else {
 			curr = stat.GetOther()
 		}
+
 		curr.Total++
+
 		switch meta.GetStatus() {
 		case gen.ItemStatus_WAIT:
 			curr.Wait++
@@ -166,8 +189,13 @@ func (store Storage) Stats(owner string) (*gen.StatsResponse, error) {
 			curr.Read++
 		case gen.ItemStatus_EXPIRED:
 			curr.Expired++
+		case gen.ItemStatus_CLEARED:
+			// Ignore
+		case gen.ItemStatus_UNKNOWN:
+			slog.Warn("Unknown status", "meta", meta)
 		}
 	}
+
 	return stat, nil
 }
 
