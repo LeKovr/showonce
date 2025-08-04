@@ -1,38 +1,38 @@
 SHELL          = /bin/sh
-CFG           ?= .env
-PRG           ?= $(shell basename $$PWD)
-PRG_DEST      ?= $(PRG)
-CFG_TMPL      ?= Makefile.env
+CFG           := .env
+PRG           := $(shell basename $$PWD)
+PRG_DEST      := $(PRG)
+CFG_TMPL      := Makefile.env
 
 # -----------------------------------------------------------------------------
 # Build config
 
-SOURCES        = $(shell find . -maxdepth 4 -mindepth 1 -path ./data -prune -o -name '*.go')
+SOURCES        := $(shell find . -maxdepth 4 -mindepth 1 -path ./data -prune -o -name '*.go')
 
-APP_VERSION   ?= $(shell git describe --tags --always)
+APP_VERSION   := $(shell git describe --tags --always)
 # Last project tag (used in `make changelog`)
-RELEASE       ?= $(shell git describe --tags --abbrev=0 --always)
+RELEASE       := $(shell git describe --tags --abbrev=0 --always)
 # Repository address (compiled into main.repo)
-REPO          ?= $(shell git config --get remote.origin.url)
+REPO          := $(shell git config --get remote.origin.url)
 
-GO             ?= go
-GOLANG_IMAGE   ?= ghcr.io/dopos/golang-alpine
-GOLANG_VERSION ?= v1.23.6-alpine3.21.3
-GOLANGCI_IMAGE ?= golangci/golangci-lint:v2.1.0
+GO             := go
+GOLANG_IMAGE   := ghcr.io/dopos/golang-alpine
+GOLANG_VERSION := v1.23.6-alpine3.21.3
+GOLANGCI_IMAGE := golangci/golangci-lint:v2.1.0
 
-TARGETOS      ?= linux
-TARGETARCH    ?= amd64
+TARGETOS      := linux
+TARGETARCH    := amd64
 LDFLAGS       := -s -w -extldflags '-static'
 
 # Distros: arch
-ALLARCH       ?= "linux/amd64 linux/386 darwin/amd64 linux/arm linux/arm64"
+ALLARCH       := "linux/amd64 linux/386 darwin/amd64 linux/arm linux/arm64"
 # Distros: destination
-DIRDIST       ?= dist
+DIRDIST       := dist
 
 # Path to golang package docs
-GODOC_REPO    ?= github.com/!le!kovr/$(PRG)
+GODOC_REPO    := github.com/!le!kovr/$(PRG)
 # App docker image
-DOCKER_IMAGE  ?= ghcr.io/lekovr/$(PRG)
+DOCKER_IMAGE  := ghcr.io/lekovr/$(PRG)
 
 .PHONY: build build-standalone run fmt lint ci-lint vet test cov-html cov-func cov-total cov-clean changelog
 

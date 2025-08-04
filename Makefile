@@ -2,10 +2,10 @@
 ## service example
 #:
 
-SHELL          = /bin/sh
-CFG           ?= .env
-CFG_TMPL      ?= Makefile.env
-PRG           ?= $(shell basename $$PWD)
+SHELL          := /bin/sh
+CFG            := .env
+CFG_TMPL       := Makefile.env
+PRG            := $(shell basename $$PWD)
 
 # -----------------------------------------------------------------------------
 # Docker image config
@@ -20,7 +20,7 @@ PROJECT_NAME  ?= $(PRG)
 DC_SERVICE    ?= app
 
 #- Docker image name
-IMAGE         ?= $(DOCKER_IMAGE)
+IMAGE         := $(if $(IMAGE),$(IMAGE),$(DOCKER_IMAGE))
 
 #- Docker image tag
 IMAGE_VER     ?= latest
@@ -30,25 +30,18 @@ IMAGE_VER     ?= latest
 
 -include $(CFG_TMPL)
 
-ifeq ($(AS_CLIENT_ID),)
-  AS_CLIENT_ID = you_should_get_id_from_as
-endif
-ifeq ($(AS_CLIENT_KEY),)
-  AS_CLIENT_KEY = you_should_get_key_from_as
-endif
-ifeq ($(AS_COOKIE_SIGN_KEY),)
-  AS_COOKIE_SIGN_KEY = $(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; echo)
-endif
-ifeq ($(AS_COOKIE_CRYPT_KEY),)
-  AS_COOKIE_CRYPT_KEY  = $(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; echo)
-endif
+AS_CLIENT_ID := $(if $(AS_CLIENT_ID),$(AS_CLIENT_ID),you_should_get_id_from_as)
+AS_CLIENT_KEY := $(if $(AS_CLIENT_KEY),$(AS_CLIENT_KEY),you_should_get_id_from_as)
+
+AS_COOKIE_SIGN_KEY  := $(if $(AS_COOKIE_SIGN_KEY),$(AS_COOKIE_SIGN_KEY),$(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; echo))
+AS_COOKIE_CRYPT_KEY := $(if $(AS_COOKIE_CRYPT_KEY),$(AS_COOKIE_CRYPT_KEY),$(shell < /dev/urandom tr -dc A-Za-z0-9 | head -c32; echo))
 
 # used in URL generation
 ifeq ($(USE_TLS),false)
 #- app url prefix
-HTTP_PROTO ?= http
+HTTP_PROTO := http
 else
-HTTP_PROTO ?= https
+HTTP_PROTO := https
 endif
 
 # ------------------------------------------------------------------------------
@@ -59,13 +52,12 @@ export
 include Makefile.golang
 
 # Find and include DCAPE/apps/drone/dcape-app/Makefile
-DCAPE_COMPOSE ?= dcape-compose
-DCAPE_ROOT    ?= $(shell docker inspect -f "{{.Config.Labels.dcape_root}}" $(DCAPE_COMPOSE))
+DCAPE_COMPOSE := dcape-compose
+DCAPE_ROOT    := $(shell docker inspect -f "{{.Config.Labels.dcape_root}}" $(DCAPE_COMPOSE))
 
 ifeq ($(shell test -e $(DCAPE_ROOT)/Makefile.app && echo -n yes),yes)
   include $(DCAPE_ROOT)/Makefile.app
 endif
-
 
 .PHONY: buildall dist clean docker docker-multi use-own-hub godoc ghcr
 
